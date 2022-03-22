@@ -1,0 +1,20 @@
+{
+  "name": "javaScript_linter",
+  "version": "1.0.0",
+  "description": "The package for JavaScript linter ",
+  "main": "index.js",
+  "scripts": {
+    "lint": "npm run lint:lwc && npm run lint:aura",
+    "lint:lwc": "eslint  force-app/main/default/lwc/**/*.js",
+    "lint:aura": "eslint  force-app/main/default/aura/**/*.js",
+    "lint:lwc:intellij:prompt": "eslint"
+  },
+  "devDependencies": {
+    "@salesforce/eslint-config-lwc": "^2.2.0",
+    "@salesforce/eslint-plugin-aura": "^2.0.0",
+    "eslint": "^7.32.0"
+  },
+  "dependencies": {
+    "eslint-config-prettier": "^8.3.0"
+  }
+}
