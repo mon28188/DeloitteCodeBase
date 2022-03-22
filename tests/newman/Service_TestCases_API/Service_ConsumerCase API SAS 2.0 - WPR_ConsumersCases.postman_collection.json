@@ -1,0 +1,463 @@
+{
+	"info": {
+		"_postman_id": "ca6d5550-3ffd-42b6-b7b2-dfd8e742bb9f",
+		"name": "Service_ConsumerCase API SAS 2.0 - WPR_ConsumersCases",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GenerateToken",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.globals.set(\"AccessToken\", \"access_token\");\r",
+							"pm.variables.get(\"variable_key\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+							"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+							"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "grant_type",
+							"value": "{{grant_type}}",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{client_id}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{client_secret}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://test.salesforce.com/services/oauth2/token",
+					"protocol": "https",
+					"host": [
+						"test",
+						"salesforce",
+						"com"
+					],
+					"path": [
+						"services",
+						"oauth2",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Example - Successful",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function ()\r",
+							"{\r",
+							"    pm.response.to.have.status(200);\r",
+							" });\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.collectionVariables.set(\"CaseId\", jsonData.data.caseNumber);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"consumerData\":{\n        \"salutation\":\"madam/sir\",\n        \"firstName\":\"Johhny3\",\n        \"lastName\":\"Bro\",\n        \"phone\":\"061234578\",\n        \"personEmail\":\"{{email}}\",\n        \"address\":{\n            \"postalCode\":\"8910CJ\",\n            \"houseNumber\":\"11\",\n            \"houseNumberAddition\":\"\",\n            \"street\":\"Harlingersingel 11\",\n            \"city\":\"Leeuwarden\",\n            \"country\":\"NL\"\n        },\n        \"addressValidationStatus\":\"Automatically validated\",\n        \"iWelcomeId\":null\n        },\n    \"CaseData\":{\n        \"type\":\"Consument\",\n        \"role\":\"Receiver\",\n        \"caseOrigin\":\"Online melding met barcode\",\n        \"barcode\": \"3STXKC13152911\",\n        \"scriptNotes\": \"questions and answers provided by client\",\n        \"dateOfComplaint\":null,\n        \"category\":null,\n        \"customerSignalSubject\":\"Parcel\",\n        \"customerSignalContent\":\"Objection customs clearance costs\",\n        \"feedbackNeeded\":true,\n        \"receiver\":{\n            \"name\": \"xx\",\n            \"phone\": \"ss\",\n            \"address\":{\n                \"postalCode\": \"xx\",\n                \"houseNumber\": \"xx\",\n                \"housenumberAddition\": \"xx\",\n                \"country\": \"xx\",\n                \"city\": \"xx\",\n                \"street\": \"xx\"\n            }\n        },\n        \"contactId\":null,\n        \"accountName\":null,\n        \"description\": \"Waarom wil je bezwaar maken? question if provided or if not provided then Answer to Waarom wil je bezwaar aanvragen? question \",\n        \"subject\": \"aaa\",\n        \"contentAmount\": 10,\n        \"iban\":null,\n        \"bankAccountName\":null,\n        \"reclamant\":null,\n        \"productService\":null\n        }\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{instance_url}}/services/apexrest/api/v1/process/consumers/cases",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"apexrest",
+						"api",
+						"v1",
+						"process",
+						"consumers",
+						"cases"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Example - Error ConsumerData null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function ()\r",
+							"{\r",
+							"    pm.response.to.have.status(400);\r",
+							" });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"CaseData\":{\n        \"CaseDetails\":{\n            \"type\":\"Consument\",\n            \"role\":\"Receiver\",\n            \"caseOrigin\":\"Online melding met barcode\",\n            \"barcode\": \"3STXKC13152911\",\n            \"scriptNotes\": \"questions and answers provided by client\",\n            \"dateOfComplaint\":null,\n            \"category\":null,\n            \"customerSignalSubject\":\"Parcel\",\n            \"customerSignalContent\":\"Objection customs clearance costs\",\n            \"feedbackNeeded\":true,\n            \"receiverPostalCode\": \"xx\",\n            \"receiverHouseNumber\": \"xx\",\n            \"receiverHousenumberAddition\": \"xx\",\n            \"receiverCountry\": \"xx\",\n            \"receiverCity\": \"xx\",\n            \"receiverStreet\": \"xx\",\n            \"contactId\":null,\n            \"accountName\":null,\n            \"description\": \"Waarom wil je bezwaar maken? question if provided or if not provided then Answer to Waarom wil je bezwaar aanvragen? question \",\n            \"subject\": \"aaa\",\n            \"contentAmount\": 10,\n            \"iban\":null,\n            \"bankAccountName\":null,\n            \"reclamant\":null,\n            \"productService\":null\n            }\n        }\n    }"
+				},
+				"url": {
+					"raw": "{{instance_url}}/services/apexrest/api/v1/process/consumers/cases",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"apexrest",
+						"api",
+						"v1",
+						"process",
+						"consumers",
+						"cases"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Example - Error CaseData null",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function ()\r",
+							"{\r",
+							"    pm.response.to.have.status(400);\r",
+							" });"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Consumer\":{\n        \"ConsumerDetails\":{\n            \"salutation\":\"madam/sir\",\n            \"firstName\":\"Johhny3\",\n            \"lastName\":\"Bro\",\n            \"phone\":\"061234578\",\n            \"personEmail\":\"juaaad@hotmail.com\",\n            \"postalCodeCons\":\"8910CJ\",\n            \"houseNumber\":\"11\",\n            \"houseNumberAddition\":\"\",\n            \"streetName\":\"Harlingersingel 11\",\n            \"city\":\"Leeuwarden\",\n            \"countryCode\":\"NL\",\n            \"addressValidationStatus\":\"Automatically validated\",\n            \"iWelcomeId\":null\n            }\n        }\n    }"
+				},
+				"url": {
+					"raw": "{{instance_url}}/services/apexrest/api/v1/process/consumers/cases",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"apexrest",
+						"api",
+						"v1",
+						"process",
+						"consumers",
+						"cases"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SQL- Count Account Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"pm.collectionVariables.set(\"Count_Rows\", jsonData.totalSize);\r",
+							"pm.test(\"Count_Rows\", function () {\r",
+							"   pm.expect(jsonData.totalSize).to.eql(1);\r",
+							"   });\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, 8000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-length": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Length",
+						"value": "0",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{instance_url}}/services/data/v43.0/query/?q=select count(Id) from Account where PersonEmail = 'postmanconsumercase11@test.nl'",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v43.0",
+						"query",
+						""
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "select count(Id) from Account where PersonEmail = 'postmanconsumercase11@test.nl'"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Apex Execute-Delete Case",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"content-length": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Length",
+						"value": "0",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v50.0",
+						"tooling",
+						"executeAnonymous",
+						""
+					],
+					"query": [
+						{
+							"key": "anonymousBody",
+							"value": " List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Apex Execute-Delete Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"content-length": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{token_type}} {{access_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Length",
+						"value": "0",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List<Account> accList = [select Id from Account where PersonEmail = '{{email}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+					"host": [
+						"{{instance_url}}"
+					],
+					"path": [
+						"services",
+						"data",
+						"v50.0",
+						"tooling",
+						"executeAnonymous",
+						""
+					],
+					"query": [
+						{
+							"key": "anonymousBody",
+							"value": " List<Account> accList = [select Id from Account where PersonEmail = '{{email}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "CaseId",
+			"value": ""
+		},
+		{
+			"key": "Count_Rows",
+			"value": ""
+		},
+		{
+			"key": "email",
+			"value": "postmanconsumercase11@test.nl"
+		}
+	]
+}

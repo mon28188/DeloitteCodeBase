@@ -1,0 +1,1215 @@
+{
+	"info": {
+		"_postman_id": "71cc1e02-dfcb-4184-adc2-5433af62f9ac",
+		"name": "OAS_CreateOrder_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_Create_Test_Data",
+			"item": [
+				{
+					"name": "Apex Execute-CreateAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const dateNow= new Date();\r",
+									"pm.collectionVariables.set('Customer_Number', dateNow.getTime());\r",
+									"pm.collectionVariables.set('email', (pm.collectionVariables.get(\"Customer_Number\"))+(\"Postman@PostNLtest.com\"));\r",
+									"pm.collectionVariables.set('UPN', (\"AV-\")+(pm.collectionVariables.get(\"Customer_Number\"))+(\"@customer.dmz.ref\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-VerifyAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateContact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-EnableAllUserAuthorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Assign AccountId to the logged User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"//pm.test(\"TestCase Status\", function () {",
+							" //   pm.response.to.have.status(200);",
+							"//});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "TC2_OAS_Create_Order_Haal breng",
+			"item": [
+				{
+					"name": "Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : Response Status is success \", function () \r",
+									"{\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"        pm.expect(jsonData.status).to.eql(\"success\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber\", jsonData.data.orderNumber);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var moment = require('moment');\r",
+									"pm.collectionVariables.set('effectiveDate', moment().format((\"YYYY-MM-DD\")));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"getPriceOnly\": false,\r\n    \"productType\": \"mail\",\r\n    \"productCode\": \"7170\",\r\n    \"quantity\": \"1\",\r\n    \"orderType\": \"{{OrderType}}\",\r\n    \"effectiveDate\": \"{{effectiveDate}}\",\r\n    \"loadtimeHoursFrom\": \"13\",\r\n    \"loadtimeMinutesFrom\": \"00\",\r\n    \"timeFrame\": 0.5,\r\n    \"orderCollectionType\": \"{{orderCollectionType}}\",\r\n    \"channel\": \"{{channel}}\",\r\n    \"quantityConveyableNL\": 1,\r\n    \"quantityNonConveyableNL\": 1,\r\n    \"quantityConveyableBE\": 1,\r\n    \"quantityNonConveyableBE\": 1,\r\n    \"quantityConveyableExport\": 1,\r\n    \"quantityNonConveyableExport\": 1,\r\n    \"street\": \"Ammunitiehaven\",\r\n    \"houseNumber\": \"103\",\r\n    \"houseNumberAddition\": \"\",\r\n    \"city\": \"'S-GRAVENHAGE\",\r\n    \"postalCode\": \"2511XH\",\r\n    \"country\": \"NL\",\r\n    \"buildingName\": \"Cici\",\r\n    \"addressLocation\": \"Urban\",\r\n    \"products\": [\r\n        {\r\n            \"quantity\": \"1\",\r\n            \"productCode\": \"{{productCode}}\",\r\n            \"mailProductType\": \"{{mailProductType}}\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/api/v1/process/customers/{{Customer_Number}}/pickup/orders",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"api",
+								"v1",
+								"process",
+								"customers",
+								"{{Customer_Number}}",
+								"pickup",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-Verify Order is created",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify Order is created\", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 10000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Status FROM Order WHERE orderNumber= '{{orderNumber}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Status FROM Order WHERE orderNumber= '{{orderNumber}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE AccountId = '{{Id}}'];\nfor (Order o : ordersList) {\n o.Status = 'Concept';\n}\nupdate ordersList;\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE AccountId = '{{Id}}'];\nfor (Order o : ordersList) {\n o.Status = 'Concept';\n}\nupdate ordersList;\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC3_DeleteTestData",
+			"item": [
+				{
+					"name": "Delete Orders",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE AccountId = '{{Id}}'];\nfor (Order o : ordersList) {\n o.Status = 'Concept';\n}\nupdate ordersList;\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE AccountId = '{{Id}}'];\nfor (Order o : ordersList) {\n o.Status = 'Concept';\n}\nupdate ordersList;\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User Authorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Favourite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Disable Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete-account-contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Unassign accountId to the logged user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Customer_Number",
+			"value": "20709507"
+		},
+		{
+			"key": "email",
+			"value": "PostmanTest12378908@gmail.com"
+		},
+		{
+			"key": "UPN",
+			"value": "AV-0012378908@customer.dmz.ref"
+		},
+		{
+			"key": "AccountName",
+			"value": "PostmanAccountOASOrder"
+		},
+		{
+			"key": "ContactFirstName",
+			"value": "Postman"
+		},
+		{
+			"key": "ContactLastName",
+			"value": "OASOrder"
+		},
+		{
+			"key": "userFirstName",
+			"value": "OASOrder"
+		},
+		{
+			"key": "userLastName",
+			"value": "TestUser"
+		},
+		{
+			"key": "userAlias",
+			"value": "BP_DFO"
+		},
+		{
+			"key": "orderNumber",
+			"value": ""
+		},
+		{
+			"key": "Id",
+			"value": ""
+		},
+		{
+			"key": "OrderType",
+			"value": "Incidentele Rit"
+		},
+		{
+			"key": "effectiveDate",
+			"value": "2025-11-22"
+		},
+		{
+			"key": "orderCollectionType",
+			"value": "Haal breng"
+		},
+		{
+			"key": "channel",
+			"value": "Business Portal"
+		},
+		{
+			"key": "productCode",
+			"value": "7170"
+		},
+		{
+			"key": "mailProductType",
+			"value": "RCS001"
+		}
+	]
+}

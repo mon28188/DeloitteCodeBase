@@ -1,0 +1,1109 @@
+{
+	"info": {
+		"_postman_id": "90b96bdb-00d2-4f98-85da-267036dbb035",
+		"name": "Service_TestCases_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_ART_Services_Case_CreateConsumerCase.testcase",
+			"item": [
+				{
+					"name": "CreateConsumerCase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"CaseNumber\", jsonData.response.caseNumber);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"Consumer\":{\r\n\"ConsumerDetails\":{\r\n\"salutation\":\"sir\",\r\n\"firstName\":\"{{firstName}}\",\r\n\"lastName\":\"{{lastName}}\",\r\n\"personEmail\":\"{{email}}\",\r\n\"personHasOptedOutOfEmail\":false,\r\n\"phone\":\"9988776655\",\r\n\"city\":\"HARDERWIJK\",\r\n\"countryCode\":\"NL\",\r\n\"houseNumber\":\"41\",\r\n\"houseNumberAddition\":\"1121\",\r\n\"mailBox\":\"102ww\",\r\n\"pcMailBox\":\"null\",\r\n\"postalCodeCons\":\"3841KM\",\r\n\"streetName\":\"Ir. Leemansstraat\",\r\n\"iWelcomeId\":\"10235556\"\r\n}\r\n},\r\n\"CaseData\":{\r\n\"CaseDetails\":{\r\n\"type\":\"Serviceverzoek Consument\",\r\n\"role\":\"Sender\",\r\n\"barcode\":\"3SBOLV024082109\",\r\n\"caseOrigin\":\"E-mail\",\r\n\"addressDelivered\":\"PrinsesBeatrixlaan23,2595AK,’s-Gravenhage\",\r\n\"category\":\"null\",\r\n\"addressPickupLocation\":\"PrinsesBeatrixlaan23,2595AK,’s-Gravenhage\",\r\n\"barcodeNetworkPartner\":\"3SBOLV02408219\",\r\n\"cashonDeliveryAmount\":\"100\",\r\n\"countryNetworkPartner\":\"NL\",\r\n\"cpccBarcode\":\"CD110570340BE\",\r\n\"customerSignalContent\":\"Onjuistklantnummer\",\r\n\"customerSignalSubject\":\"Administratief\",\r\n\"deliveredAttheNeighbours\":false,\r\n\"depot\":\"Depot\",\r\n\"dateOfComplaint\":\"2018-05-28\",\r\n\"distributionAttribute\":\"Distributionattribute\",\r\n\"insuredAmount\":\"2500\",\r\n\"lastPhysicalScan\":\"Lastphysicalscan\",\r\n\"mailbox\":false,\r\n\"mainBarcode\":\"3SBOLV02408219\",\r\n\"measurements_LxBxH\":\"23x45x183\",\r\n\"networkPartner\":\"NetworkPartner\",\r\n\"numberOfColli\":\"1\",\r\n\"originalProductFromCollo\":\"3085\",\r\n\"originalProductOptionSortCollo\":\"OriginalProductOptionSortCollo\",\r\n\"productCode\":\"3085\",\r\n\"receiverCity\":\"null\",\r\n\"receiverCountry\":\"null\",\r\n\"receiverHousenumber\":\"null\",\r\n\"receiverHousenumberAddition\":\"null\",\r\n\"receiverName\":\"null\",\r\n\"receiverPostalCode\":\"null\",\r\n\"receiverStreet\":\"WillemLodewijkstraat\",\r\n\"reference\":\"Reference\",\r\n\"relabelNumber\":\"RelabelNumber\",\r\n\"rideNumber\":\"RideNumber\",\r\n\"sNotepadFlow\":\"NotepadFlow\",\r\n\"scriptNotes\":\"ScriptNotes\",\r\n\"sector\":\"Sector\",\r\n\"senderCity\":\"null\",\r\n\"senderCountry\":\"null\",\r\n\"senderHousenumber\":\"null\",\r\n\"senderHousenumberAddition\":\"null\",\r\n\"senderName\":\"null\",\r\n\"senderPostalCode\":\"null\",\r\n\"senderStreet\":\"null\",\r\n\"shipmentDate\":\"2018-05-28\",\r\n\"userNumberDriver\":\"UserNumberDriver\",\r\n\"weightGram\":\"44.0\"\r\n},\r\n\"AfgenomenService\":[{\r\n\"kenmerkCode\":\"kCode\",\r\n\"kenmerkName\":\"kName\",\r\n\"optionTypeCode\":\"OTCode\",\r\n\"optionTypeName\":\"OTName\"\r\n},\r\n{\r\n\"kenmerkCode\":\"kCode\",\r\n\"kenmerkName\":\"kName\",\r\n\"optionTypeCode\":\"OTCode\",\r\n\"optionTypeName\":\"OTName\"\r\n}]\r\n}\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateConsumerCase/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateConsumerCase",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- GetCaseId_Afgenomen_Service__c",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.test(\"CountDBOJobItems\", function () {\r",
+									"   pm.expect(jsonData.totalSize).to.eql(2);\r",
+									"   });\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 8000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select Id from Afgenomen_Service__c where Case__r.CaseNumber = '{{CaseNumber}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select Id from Afgenomen_Service__c where Case__r.CaseNumber = '{{CaseNumber}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- GetAccountId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.test(\"CountDBOJobItems\", function () {\r",
+									"   pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"   });\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"Set Account Id\", function () {\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Account_Id\", jsonData.records[0].Id);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 15000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select Id from Account where FirstName = '{{firstName}}' and LastName = '{{lastName}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select Id from Account where FirstName = '{{firstName}}' and LastName = '{{lastName}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseNumber}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseNumber}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List<Account> accList = [select Id from Account where Id = '{{Account_Id}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List<Account> accList = [select Id from Account where Id = '{{Account_Id}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC2_Service_Mail_CM_Klacht_Uitgezet.testcase",
+			"item": [
+				{
+					"name": "CreateConsumer_Min",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"ConsumerId\", jsonData.response.Id);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Consumer\": {\r\n        \"ConsumerDetails\": {\r\n            \"salutation\": \"sir\",\r\n            \"firstName\": \"{{firstName}}\",\r\n            \"lastName\": \"{{lastName}}\",\r\n            \"personEmail\": \"{{email}}\"\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateConsumer/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateConsumer",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateCase_KlachtConsument",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"CaseId\", jsonData.response.caseNumber);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"CaseData\": {\r\n        \"CaseDetails\": {\r\n            \"Type\": \"Klacht Consument\",\r\n            \"caseOrigin\": \"Webformulier\",\r\n            \"customerSignalSubject\": \"Distributie\",\r\n            \"customerSignalContent\": \"Gedrag medewerker\",\r\n            \"scriptNotes\": \"Srvc02 Notitie\",\r\n            \"dateOfComplaint\": \"1982-02-07\"\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateCase/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateCase",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Update case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> cases = [select Send_to_Production__c, OwnerId from Case where CaseNumber =:'{{CaseId}}'];\nif (!cases.isEmpty()){\ncases[0].OwnerId = '{{OwnerID}}';\ncases[0].Send_to_Production__c = true;\nupdate cases;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List <Case> cases = [select Send_to_Production__c, OwnerId from Case where CaseNumber =:'{{CaseId}}'];\nif (!cases.isEmpty()){\ncases[0].OwnerId = '{{OwnerID}}';\ncases[0].Send_to_Production__c = true;\nupdate cases;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- VerifyUpdatedCase",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.test(\"CountDBOJobItems\", function () {\r",
+									"   pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"   });\r",
+									"\r",
+									"pm.test(\"Verify Updated OwnerID and Send to Production Flag\", function () {\r",
+									"   pm.expect(jsonData.records[0].OwnerId).to.eql(pm.collectionVariables.get(\"OwnerID\"))\r",
+									"   pm.expect(jsonData.records[0].Send_to_Production__c).to.eql(true)\r",
+									"   });\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 8000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select Id, Send_to_Production__c, OwnerId from Case where CaseNumber = '{{CaseId}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select Id, Send_to_Production__c, OwnerId from Case where CaseNumber = '{{CaseId}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List<Account> accList = [select Id from Account where Id = '{{ConsumerId}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List<Account> accList = [select Id from Account where Id = '{{ConsumerId}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC3_Service_Pakketten_CM_A_Case.testcase",
+			"item": [
+				{
+					"name": "CreateConsumer_Min",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"ConsumerId\", jsonData.response.Id);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Consumer\": {\r\n        \"ConsumerDetails\": {\r\n            \"salutation\": \"sir\",\r\n            \"firstName\": \"{{firstName}}\",\r\n            \"lastName\": \"{{lastName}}\",\r\n            \"personEmail\": \"{{email}}\"\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateConsumer/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateConsumer",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateCase_Zendinggerelateerd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"CaseId\", jsonData.response.caseNumber);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"CaseData\": {\r\n        \"CaseDetails\": {\r\n            \"Type\": \"Zendinggerelateerd\",\r\n            \"caseOrigin\": \"E-mail\",\r\n            \"customerSignalSubject\": \"Distributie\",\r\n            \"customerSignalContent\": \"Gedrag medewerker\",\r\n            \"scriptNotes\": \"Srvc01 Notitie\",\r\n            \"dateOfComplaint\": \"1982-02-07\"\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateCase/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateCase",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List <Case> caseList = [select Id from Case where CaseNumber = '{{CaseId}}'];\n\nif (caseList.size() > 0){\ndelete caseList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List<Account> accList = [select Id from Account where Id = '{{ConsumerId}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List<Account> accList = [select Id from Account where Id = '{{ConsumerId}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "firstName",
+			"value": "Test"
+		},
+		{
+			"key": "lastName",
+			"value": "Postman"
+		},
+		{
+			"key": "email",
+			"value": "tespostman19@postnl.tst"
+		},
+		{
+			"key": "dunsNumber",
+			"value": "490269316"
+		},
+		{
+			"key": "Iban",
+			"value": "NL34ABNA0494722452"
+		},
+		{
+			"key": "OwnerID",
+			"value": "00Gw00000029e1REAQ"
+		},
+		{
+			"key": "ConsumerId",
+			"value": ""
+		},
+		{
+			"key": "CaseId",
+			"value": ""
+		},
+		{
+			"key": "CreatedCustomerNumber",
+			"value": ""
+		},
+		{
+			"key": "CreatedCustomerId",
+			"value": ""
+		},
+		{
+			"key": "CustomerType",
+			"value": ""
+		},
+		{
+			"key": "CreatedById",
+			"value": ""
+		},
+		{
+			"key": "CaseNumber",
+			"value": ""
+		},
+		{
+			"key": "Account_Id",
+			"value": ""
+		}
+	]
+}

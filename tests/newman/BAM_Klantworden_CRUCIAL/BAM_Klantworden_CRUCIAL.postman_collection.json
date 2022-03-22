@@ -1,0 +1,1102 @@
+{
+	"info": {
+		"_postman_id": "e02ace6f-206a-4c40-9165-44c3b36092c8",
+		"name": "BAM_Klantworden_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_BAM_Klantworden.testcase",
+			"item": [
+				{
+					"name": "Apex Execute-Delete JobItems",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n   \"queryType\": \"SQL\",\r\n   \"query\": \"SELECT Id, Name FROM Account WHERE Customer_Number__c = '9401138' LIMIT 1\"\r\n   }\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<DBO_JobItemRecord__c> jobList = [select jobitem__r.Id from DBO_JobItemRecord__c where RecordId__c = '{{CreatedCustomerId}}'];\n\nif ( jobList != null %26%26 jobList.size() > 0) {\n\tdelete jobList ;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<DBO_JobItemRecord__c> jobList = [select jobitem__r.Id from DBO_JobItemRecord__c where RecordId__c = '{{CreatedCustomerId}}'];\n\nif ( jobList != null %26%26 jobList.size() > 0) {\n\tdelete jobList ;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateCustomer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"CreatedCustomerNumber\", jsonData.response.customerNumber);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"Customer\" :{\r\n\"CustomerDetails\" :{\r\n\"dunsNumber\" : \"{{dunsNumber}}\"\r\n},\r\n\"BankDetails\" : {\r\n\"Iban\": \"{{Iban}}\",\r\n\"bankNrName\" : \"TEST BANK\"\r\n},\r\n\"InvoiceData\" : {\r\n\"email\" : \"{{email}}\"\r\n},\r\n\"ContactPerson\" : {\r\n\"email\" : \"{{email}}\",\r\n\"firstName\" : \"{{firstName}}\",\r\n\"lastName\" : \"{{lastName}}\",\r\n\"genderCode\" : \"0001\"\r\n},\r\n\"AdditionalInformation\" :{\r\n\"commercialProductGroup\" : \"Parcels\",\r\n\"contractAmount\" : \"1000-2500\",\r\n\"paymentMethod\" : \"Invoice\"\r\n}\r\n}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateCustomer/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateCustomer",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- GetAccountDetails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.test(\"CountDBOJobItems\", function () {\r",
+									"   pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"   });\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"CreatedCustomerId\", jsonData.records[0].Id);\r",
+									"pm.collectionVariables.set(\"CustomerType\", jsonData.records[0].Type);\r",
+									"pm.collectionVariables.set(\"CreatedById\", jsonData.records[0].CreatedById);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select Id , Type, CreatedById from Account where Customer_Number__c = '{{CreatedCustomerNumber}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select Id , Type, CreatedById from Account where Customer_Number__c = '{{CreatedCustomerNumber}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-RunToPickPendingJobs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){},5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=DBO_JobItemBatchStarter.start();",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "DBO_JobItemBatchStarter.start();"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User Authorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete addresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Case",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List <Case> caseList = [select Id from Case where AccountId = '{{CreatedCustomerId}}'];\nif (caseList.size() > 0){\ndelete caseList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List <Case> caseList = [select Id from Case where AccountId = '{{CreatedCustomerId}}'];\nif (caseList.size() > 0){\ndelete caseList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Favourite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Agreements",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n   \"queryType\": \"SQL\",\r\n   \"query\": \"SELECT Id, Name FROM Account WHERE Customer_Number__c = '9401138' LIMIT 1\"\r\n   }\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Agreement_Usage_Junction__c> agreementList = [select Id, Name from Agreement_Usage_Junction__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif ( agreementList != null %26%26 agreementList.size() > 0) {\n\tdelete agreementList ;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Agreement_Usage_Junction__c> agreementList = [select Id, Name from Agreement_Usage_Junction__c where Account__r.Customer_Number__c = '{{CreatedCustomerNumber}}'];\n\nif ( agreementList != null %26%26 agreementList.size() > 0) {\n\tdelete agreementList ;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete opportunities",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n   \"queryType\": \"SQL\",\r\n   \"query\": \"SELECT Id, Name FROM Account WHERE Customer_Number__c = '9401138' LIMIT 1\"\r\n   }\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Opportunity> opportunityList = [select Id from Opportunity where Account.Id = '{{CreatedCustomerId}}'];\n\nif ( opportunityList != null %26%26 opportunityList.size() > 0) {\n\tdelete opportunityList ;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Opportunity> opportunityList = [select Id from Opportunity where Account.Id = '{{CreatedCustomerId}}'];\n\nif ( opportunityList != null %26%26 opportunityList.size() > 0) {\n\tdelete opportunityList ;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Party_Code_Request_Form__c",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Party_Code_Request_Form__c> ReqForm = [select Id from Party_Code_Request_Form__c where Account__r.Id = '{{CreatedCustomerId}}'];\n\nif (ReqForm != null %26%26 ReqForm.size() > 0 ){\n\tdelete ReqForm;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Party_Code_Request_Form__c> ReqForm = [select Id from Party_Code_Request_Form__c where Account__r.Id = '{{CreatedCustomerId}}'];\n\nif (ReqForm != null %26%26 ReqForm.size() > 0 ){\n\tdelete ReqForm;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete JobItems",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n   \"queryType\": \"SQL\",\r\n   \"query\": \"SELECT Id, Name FROM Account WHERE Customer_Number__c = '9401138' LIMIT 1\"\r\n   }\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<DBO_JobItemRecord__c> jobList = [select jobitem__r.Id from DBO_JobItemRecord__c where RecordId__c = '{{CreatedCustomerId}}'];\n\nif ( jobList != null %26%26 jobList.size() > 0) {\n\tdelete jobList ;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<DBO_JobItemRecord__c> jobList = [select jobitem__r.Id from DBO_JobItemRecord__c where RecordId__c = '{{CreatedCustomerId}}'];\n\nif ( jobList != null %26%26 jobList.size() > 0) {\n\tdelete jobList ;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Disable Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{CreatedCustomerNumber}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{CreatedCustomerNumber}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody= List<Account> accList = [select Id , Type, CreatedById from Account where Customer_Number__c = '{{CreatedCustomerNumber}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": " List<Account> accList = [select Id , Type, CreatedById from Account where Customer_Number__c = '{{CreatedCustomerNumber}}'];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "firstName",
+			"value": "Test"
+		},
+		{
+			"key": "lastName",
+			"value": "Postman"
+		},
+		{
+			"key": "email",
+			"value": "tespostman19@postnl.tst"
+		},
+		{
+			"key": "dunsNumber",
+			"value": "490269316"
+		},
+		{
+			"key": "Iban",
+			"value": "NL34ABNA0494722452"
+		},
+		{
+			"key": "OwnerID",
+			"value": "00Gw00000029e1REAQ"
+		},
+		{
+			"key": "ConsumerId",
+			"value": ""
+		},
+		{
+			"key": "CaseId",
+			"value": ""
+		},
+		{
+			"key": "CreatedCustomerNumber",
+			"value": ""
+		},
+		{
+			"key": "CreatedCustomerId",
+			"value": ""
+		},
+		{
+			"key": "CustomerType",
+			"value": ""
+		},
+		{
+			"key": "CreatedById",
+			"value": ""
+		},
+		{
+			"key": "CaseNumber",
+			"value": ""
+		},
+		{
+			"key": "Account_Id",
+			"value": ""
+		},
+		{
+			"key": "label_job_Count",
+			"value": ""
+		},
+		{
+			"key": "NumberOfTries",
+			"value": ""
+		}
+	]
+}

@@ -1,0 +1,1929 @@
+{
+	"info": {
+		"_postman_id": "9dfef4f9-5a19-405b-86d0-679f9dd3697c",
+		"name": "BP_BulkMail_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_Create_Test_Data",
+			"item": [
+				{
+					"name": "Apex Execute-CreateAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const dateNow= new Date();\r",
+									"pm.collectionVariables.set('Customer_Number', dateNow.getTime());\r",
+									"pm.collectionVariables.set('email', (pm.collectionVariables.get(\"Customer_Number\"))+(\"Postman@PostNLtest.com\"));\r",
+									"pm.collectionVariables.set('UPN', (\"AV-\")+(pm.collectionVariables.get(\"Customer_Number\"))+(\"@customer.dmz.ref\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-VerifyAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateContact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-EnableAllUserAuthorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Assign AccountId to the logged User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"//pm.test(\"TestCase Status\", function () {",
+							" //   pm.response.to.have.status(200);",
+							"//});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "TC2_ART_BP_UI_BulkMail_Min.testcase",
+			"item": [
+				{
+					"name": "Create BulkMail_Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"sapProductCode\": \"2821\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update BulkMail_Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Address Sorted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Addresses sorted\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"consignmentNumber\": \"{{consignmentNumber}}\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Addresses sorted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/UpdateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"UpdateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tender BulkMail_Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.test(\"Order is Tendered\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].status).to.eql(\"Tendered\");\r",
+									"    });\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OrderStatus\", jsonData.response.order[0].status);\r",
+									"pm.collectionVariables.set(\"orderNumber\", jsonData.response.order[0].orderNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\"\r\n            },\r\n            \"groupedOrderProducts\": [\r\n                {\r\n                    \"OrderProducts\": [\r\n                        {\r\n                            \"consignmentNumber\": \"{{consignmentNumber}}\"\r\n                        }\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/TenderOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"TenderOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE orderNumber= '{{orderNumber}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE orderNumber= '{{orderNumber}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC3_ART_BP_CreatreOrder_PPO",
+			"item": [
+				{
+					"name": "Create BulkMail_Order_SAPProduct_2822",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber_2822\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber_2822\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"sapProductCode\": \"2822\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update BulkMail_Order_2822",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Address Sorted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Addresses sorted\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"consignmentNumber\": \"{{consignmentNumber_2822}}\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Addresses sorted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/UpdateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"UpdateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create BulkMail_Order_commercialProduct_7320",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber_7320\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber_7320\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"status\": \"Pre alerted\",\r\n                \"orderDate\": \"2020-01-29\",\r\n                \"UPN\": \"ExampleUPN123\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"productCode\": \"7320\",\r\n                \"commercialProduct\": \"20400\",\r\n                \"serviceLevel\": \"NEXTDAY\",\r\n                \"productKind\": \"DFLT\",\r\n                \"commercialItemOptions\": \"T&T\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"ORIK2Name\": \"ORIK2Name\",\r\n                \"ORIK2Value\": \"ORIK2Value\",\r\n                \"ORIK3Name\": \"ORIK3Name\",\r\n                \"ORIK3Value\": \"ORIK3Value\",\r\n                \"edition\": \"123\",\r\n                \"quantity\": \"2\",\r\n                \"weight\": \"10\",\r\n                \"totalWeight\": \"20\",\r\n                \"franking\": \"FM\",\r\n                \"frankingMachineId\": \"1234\",\r\n                \"country\": \"NL\",\r\n                \"zone\": \"BIN\",\r\n                \"dimensions\": \"1\",\r\n                \"length\": \"12\",\r\n                \"width\": \"14\",\r\n                \"thicknessRange\": \"1\",\r\n                \"thickness\": \"33\",\r\n                \"packagingType\": \"5\",\r\n                \"labelingType\": \"3\",\r\n                \"shippingDate\": \"2020-01-29\",\r\n                \"deliveryWeek\": \"3\",\r\n                \"deliveryYear\": \"2018\",\r\n                \"deliveryDate\": \"2020-01-30\",\r\n                \"orderWithAuditReport\": false,\r\n                \"logisticalParty\": \"logisticalParty\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update BulkMail_Order _7320",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Address Sorted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Addresses sorted\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"consignmentNumber\": \"{{consignmentNumber_7320}}\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Addresses sorted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/UpdateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"UpdateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create BulkMail_Order_commercialProduct_7300",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber_7300\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber_7300\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"status\": \"Pre alerted\",\r\n                \"orderDate\": \"2020-01-29\",\r\n                \"UPN\": \"ExampleUPN123\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"productCode\": \"7300\",\r\n                \"commercialProduct\": \"20400\",\r\n                \"serviceLevel\": \"NEXTDAY\",\r\n                \"productKind\": \"DFLT\",\r\n                \"commercialItemOptions\": \"T&T\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"ORIK2Name\": \"ORIK2Name\",\r\n                \"ORIK2Value\": \"ORIK2Value\",\r\n                \"ORIK3Name\": \"ORIK3Name\",\r\n                \"ORIK3Value\": \"ORIK3Value\",\r\n                \"edition\": \"123\",\r\n                \"quantity\": \"2\",\r\n                \"weight\": \"10\",\r\n                \"totalWeight\": \"20\",\r\n                \"franking\": \"FM\",\r\n                \"frankingMachineId\": \"1234\",\r\n                \"country\": \"NL\",\r\n                \"zone\": \"BIN\",\r\n                \"dimensions\": \"1\",\r\n                \"length\": \"12\",\r\n                \"width\": \"14\",\r\n                \"thicknessRange\": \"1\",\r\n                \"thickness\": \"33\",\r\n                \"packagingType\": \"5\",\r\n                \"labelingType\": \"3\",\r\n                \"shippingDate\": \"2020-01-29\",\r\n                \"deliveryWeek\": \"3\",\r\n                \"deliveryYear\": \"2018\",\r\n                \"deliveryStartDate\": \"2020-01-31\",\r\n                \"deliveryEndDate\": \"2020-02-01\",\r\n                \"orderWithAuditReport\": false,\r\n                \"logisticalParty\": \"logisticalParty\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update BulkMail_Order_7300",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Address Sorted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Addresses sorted\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"consignmentNumber\": \"{{consignmentNumber_7300}}\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Addresses sorted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/UpdateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"UpdateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC4_ART_BP_TenderOrder_PPO",
+			"item": [
+				{
+					"name": "Create BulkMail_Order_First",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber_First\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber_First\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"sapProductCode\": \"2822\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create BulkMail_Order_Second",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"    \r",
+									"pm.test(\"Order created : OrderStatus is Pre alerted \", function () \r",
+									"{\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].orderProducts[0].status).to.eql(\"Pre alerted\");\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"orderNumber_Second\", jsonData.response.order[0].orderNumber);\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"consignmentNumber_Second\", jsonData.response.order[0].orderProducts[0].consignmentNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\",\r\n                \"type\": \"Bulkmail\",\r\n                \"customerNumber\": \"{{Customer_Number}}\",\r\n                \"orderDate\": \"2018-08-23\",\r\n                \"status\": \"Pre alerted\"\r\n            },\r\n            \"OrderProduct\": {\r\n                \"sapProductCode\": \"2822\",\r\n                \"hybrisPrice\": \"100\",\r\n                \"status\": \"Pre alerted\",\r\n                \"channel\": \"Mijn PostNL\",\r\n                \"ORIK1Name\": \"ORIK1Name\",\r\n                \"ORIK1Value\": \"ORIK1Value\",\r\n                \"quantity\": \"2\",\r\n                \"franking\": \"PB\",\r\n                \"country\": \"NL\",\r\n                \"shippingDate\": \"2018-08-23\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/CreateOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"CreateOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tender BulkMail_Order_GroupTender",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.test(\"Order is Tendered\", function () {\r",
+									"        var jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.response.order[0].status).to.eql(\"Tendered\");\r",
+									"    });\r",
+									"});\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OrderStatus\", jsonData.response.order[0].status);\r",
+									"pm.collectionVariables.set(\"orderNumber\", jsonData.response.order[0].orderNumber);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Orders\": [\r\n        {\r\n            \"OrderDetails\": {\r\n                \"orderType\": \"Bulk_Mail\"\r\n            },\r\n            \"groupedOrderProducts\": [\r\n                {\r\n                    \"OrderProducts\": [\r\n                        {\r\n                            \"consignmentNumber\": \"{{consignmentNumber_First}}\"\r\n                        }\r\n                    ]\r\n                },\r\n                {\r\n                    \"OrderProducts\": [\r\n                        {\r\n                            \"consignmentNumber\": \"{{consignmentNumber_Second}}\"\r\n                        }\r\n                    ]\r\n                }\r\n            ]\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/sas/TenderOrder/v1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"sas",
+								"TenderOrder",
+								"v1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC5_DeleteTestData",
+			"item": [
+				{
+					"name": "Delete Orders",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Order> ordersList = [SELECT Id FROM Order WHERE Customer_Number__c = '{{Customer_Number}}'];\nfor (Order o : ordersList) {\n    o.Status = 'Pre alerted';\n}\ndelete ordersList;"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User Authorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Favourite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Disable Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete-account-contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Unassign accountId to the logged user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Customer_Number",
+			"value": "12378908"
+		},
+		{
+			"key": "email",
+			"value": "1632839075015Postman@PostNLtest.com"
+		},
+		{
+			"key": "UPN",
+			"value": "AV-1632839075015@customer.dmz.ref"
+		},
+		{
+			"key": "AccountName",
+			"value": "PostmanAccountBulkMailCrucial"
+		},
+		{
+			"key": "ContactFirstName",
+			"value": "Postman"
+		},
+		{
+			"key": "ContactLastName",
+			"value": "BulkMailCrucial"
+		},
+		{
+			"key": "userFirstName",
+			"value": "BulkMailCrucial"
+		},
+		{
+			"key": "userLastName",
+			"value": "TestUser"
+		},
+		{
+			"key": "userAlias",
+			"value": "BP_PBM"
+		},
+		{
+			"key": "orderNumber",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber",
+			"value": ""
+		},
+		{
+			"key": "OrderStatus",
+			"value": ""
+		},
+		{
+			"key": "orderNumber_2822",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber_2822",
+			"value": ""
+		},
+		{
+			"key": "orderNumber_7320",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber_7320",
+			"value": ""
+		},
+		{
+			"key": "orderNumber_7300",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber_7300",
+			"value": ""
+		},
+		{
+			"key": "orderNumber_First",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber_First",
+			"value": ""
+		},
+		{
+			"key": "orderNumber_Second",
+			"value": ""
+		},
+		{
+			"key": "consignmentNumber_Second",
+			"value": ""
+		},
+		{
+			"key": "Id",
+			"value": ""
+		}
+	]
+}

@@ -1,0 +1,5880 @@
+{
+	"info": {
+		"_postman_id": "f4453a28-0ae5-42f0-8634-513620bd08c0",
+		"name": "BP_DecisionTree_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_Create_Test_Data",
+			"item": [
+				{
+					"name": "Apex Execute-Clear Cache",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=App_PlatformCacheService.IService cacheService = App_PlatformCacheService.newInstance();\ncacheService.removeSession(DOM_PlatformCache.PSM_AVAILABLE_PRODUCTS);\ncacheService.removeSession(DOM_PlatformCache.PSM_PRODUCT_QUESTION_OPTION);",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "App_PlatformCacheService.IService cacheService = App_PlatformCacheService.newInstance();\ncacheService.removeSession(DOM_PlatformCache.PSM_AVAILABLE_PRODUCTS);\ncacheService.removeSession(DOM_PlatformCache.PSM_PRODUCT_QUESTION_OPTION);"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/*\r",
+									"const dateNow= new Date();\r",
+									"pm.collectionVariables.set('Customer_Number', dateNow.getTime());\r",
+									"pm.collectionVariables.set('email', (pm.collectionVariables.get(\"Customer_Number\"))+(\"Postman@PostNLtest.com\"));\r",
+									"pm.collectionVariables.set('UPN', (\"AV-\")+(pm.collectionVariables.get(\"Customer_Number\"))+(\"@customer.dmz.ref\"));\r",
+									"\r",
+									"function createPartyCode(length) {\r",
+									"    var partyCode = \"\"\r",
+									"    var sourceString = \"AJLBJK158FDBFDBKYENXDB L56FGFDGFH45GHG5352H253FDSNNMH125412HF45653HG53623GFF2323GHJMKLLKDKG,FIFM,MG7821FGFHGF65FFHGFHYGCLGBM97561779623223323HGXCTRADSADSHJDGFDHGYHHJDGHSWJKFGHGHGHDGFGFJLDS26565625646564212GFVDSFFDS121231KLHGG45ASDFVG6476545456454\";\r",
+									"    for (let i = 0; i < length; i++) {\r",
+									"        partyCode += sourceString.charAt(Math.floor(Math.random() * sourceString.length))\r",
+									"    }\r",
+									"    return partyCode;\r",
+									"}\r",
+									"\r",
+									"  pm.collectionVariables.set('DomesticPartyCode1', createPartyCode(4));  \r",
+									"  pm.collectionVariables.set('DomesticPartyCode2', createPartyCode(4));\r",
+									"  pm.collectionVariables.set('DomesticPartyCode3', createPartyCode(4));  \r",
+									"  pm.collectionVariables.set('GlobalPartyCode', createPartyCode(6));\r",
+									"\r",
+									"*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-VerifyAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Id\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-RunToPickPendingJobs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=DBO_JobItemBatchStarter.start();",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "DBO_JobItemBatchStarter.start();"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateContact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-EnableAllUserAuthorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create User Configuration Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User_configuration_value__c newUserConfigValue = new User_configuration_value__c();\n\nConfiguration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList != null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\t\n\t\tUser u = \tuserList[0];\n\n\t\tnewUserConfigValue.Configuration_setting__c = configSetting.Id;\n\t\tnewUserConfigValue.Configuration_value__c = configValue.Id;\n\t\tnewUserConfigValue.Enabled__c = false;\n\t\tnewUserConfigValue.User__c = u.Id;\n\n\t\tinsert newUserConfigValue;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User_configuration_value__c newUserConfigValue = new User_configuration_value__c();\n\nConfiguration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList != null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\t\n\t\tUser u = \tuserList[0];\n\n\t\tnewUserConfigValue.Configuration_setting__c = configSetting.Id;\n\t\tnewUserConfigValue.Configuration_value__c = configValue.Id;\n\t\tnewUserConfigValue.Enabled__c = false;\n\t\tnewUserConfigValue.User__c = u.Id;\n\n\t\tinsert newUserConfigValue;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-General",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode1}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode1}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden pakketten';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode1}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode1}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden pakketten';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-Pickup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode2}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode2}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden afhaalservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode2}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode2}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden afhaalservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-return",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode3}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode3}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden retourservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode3}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode3}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden retourservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Global",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Global_{{GlobalPartyCode}}';\n\tnewPartyCode.Party_Code__c  = '{{GlobalPartyCode}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Global Pack Range';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Global_{{GlobalPartyCode}}';\n\tnewPartyCode.Party_Code__c  = '{{GlobalPartyCode}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Global Pack Range';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Product Authorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=//Account acc = [select Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nPostNL_Contract__c auth = new PostNL_Contract__c();\n\tauth.Contract_Number__c = '01' ;\n\tauth.Account__c = '{{Id}}';\n\tauth.Name = '01';\n\tauth.Start_Date__c = system.today();\n\tauth.End_Date__c = Date.newInstance(2099, 01, 01);\n\tinsert auth;\nPostNL_Contract__c contract = [select Id from PostNL_Contract__c where Account__r.Customer_Number__c = '{{Customer_Number}}' limit 1]; \nList<PostNL_Products__c> prodList = [SELECT Id,ProductID__c from PostNL_Products__c where RecordType.DeveloperName = 'SAP_Product' and Inactive__c = FALSE];\nList<Contract_Line_Item__c> addCLI = new List<Contract_Line_Item__c>();\nif(prodList.size() > 0){\n\tfor(PostNL_Products__c prod : prodList){\n\tContract_Line_Item__c cli = new Contract_Line_Item__c();\n\tcli.Contract__c = contract.Id;\n\tcli.Start_Date__c = system.today();\n\tcli.End_Date__c = Date.newInstance(2099, 01, 01);\n\tcli.Product__c = prod.Id;\n\tcli.Status__c = 'Active';\n\taddCLI.add(cli);\n\t}\n\tinsert addCLI;\n}\nId contractId = contract.Id; \n//Extra at home Characteristic\nSet<String> productCodes = new Set<String>{ \n'3790','3791','3653','3628','3792','3793','3783','3629','3794','3795','3781','3780','3796','3797','3784','3782','3783','3784','3792','3796'}; \nSet<String> values = new Set<String>{ \n'130:001','130:002','130:003','130:004','130:005','130:006','130:007','130:020','130:021','130:022','130:023','130:024','130:025','130:026','130:027','130:028', \n'130:029','130:030','131:001','131:002','131:003','131:004','131:005','133:001','133:002','133:003','133:004','133:005','134:001'}; \nList<Contract_Line_Item__c> items = [SELECT Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodes AND Contract__c = :contractId]; \nList<Contract_Line_Item_Detail__c> details = new List<Contract_Line_Item_Detail__c>(); \nif(items.size() > 0){\n\tfor(Contract_Line_Item__c item : items){ \n\tfor(String value : values){ \n\tString characteristic = value.substring(0, value.indexOf(':'));  \n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = characteristic, \n\tContract_Line_Item__c = item.Id \n\t);\n\tdetails.add(detail); \n\t} \n\t} \n\tinsert details;\n}\n//Standaard Zending/Alleen Huisadres Characteristic\nList<Contract_Line_Item__c> prod = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('3385') AND Contract__c = :contractId limit 1];\nif(prod.size() > 0){\n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '101', \n\tValue__c = '008', \n\tContract_Line_Item__c = prod[0].Id); \n\tinsert detail;\n} \n//EPS COD Characteristic \nList<Contract_Line_Item__c> prodEPS = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('4924') AND Contract__c = :contractId limit 1];\nif(prodEPS.size() > 0){\n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '002', \n\tValue__c = '011', \n\tContract_Line_Item__c = prod[0].Id); \n\tinsert detail;\n}\nList<Contract_Line_Item__c> delNeighbour = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('3437') AND Contract__c = :contractId limit 1];\nif(delNeighbour.size() > 0){\nContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \nCharacteristic__c = '002', \nValue__c = '014', \nContract_Line_Item__c = delNeighbour[0].Id\n); \ninsert detail;\n}\n//Same Day Delivery Characteristic\nList<Contract_Line_Item_Detail__c> detailsSDD = new List<Contract_Line_Item_Detail__c>(); \nSet<String> productCodesSDD = new Set<String>{ \n'3085','3083','3084','3087','3086','3089','3093','3094','3091','3090','3096','3097','3385','3389','3390','3089'};\nList<Contract_Line_Item__c> itemsSDD = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodesSDD AND Contract__c = :contractId];\nif(itemsSDD.size() > 0){\nfor(Contract_Line_Item__c itemSDD : itemsSDD){ \n\tContract_Line_Item_Detail__c detailSDD = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '118', \n\tValue__c = '015', \n\tContract_Line_Item__c = itemSDD.Id ); \n\tdetailsSDD.add(detailSDD); \n\t}\n\tinsert detailsSDD;\n} \n//Same Day Delivery Characteristic\nList<Contract_Line_Item_Detail__c> detailsSDD2 = new List<Contract_Line_Item_Detail__c>(); \nSet<String> productCodesSDD2 = new Set<String>{ \n'3083','3084'};\nList<Contract_Line_Item__c> itemsSDD2 = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodesSDD2 AND Contract__c = :contractId];\nif(itemsSDD2.size() > 0){\nfor(Contract_Line_Item__c itemSDD : itemsSDD2){ \n\tContract_Line_Item_Detail__c detailSDD = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '118', \n\tValue__c = '024', \n\tContract_Line_Item__c = itemSDD.Id ); \n\tdetailsSDD2.add(detailSDD); \n\t}\n\tinsert detailsSDD2;\n} ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "//Account acc = [select Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nPostNL_Contract__c auth = new PostNL_Contract__c();\n\tauth.Contract_Number__c = '01' ;\n\tauth.Account__c = '{{Id}}';\n\tauth.Name = '01';\n\tauth.Start_Date__c = system.today();\n\tauth.End_Date__c = Date.newInstance(2099, 01, 01);\n\tinsert auth;\nPostNL_Contract__c contract = [select Id from PostNL_Contract__c where Account__r.Customer_Number__c = '{{Customer_Number}}' limit 1]; \nList<PostNL_Products__c> prodList = [SELECT Id,ProductID__c from PostNL_Products__c where RecordType.DeveloperName = 'SAP_Product' and Inactive__c = FALSE];\nList<Contract_Line_Item__c> addCLI = new List<Contract_Line_Item__c>();\nif(prodList.size() > 0){\n\tfor(PostNL_Products__c prod : prodList){\n\tContract_Line_Item__c cli = new Contract_Line_Item__c();\n\tcli.Contract__c = contract.Id;\n\tcli.Start_Date__c = system.today();\n\tcli.End_Date__c = Date.newInstance(2099, 01, 01);\n\tcli.Product__c = prod.Id;\n\tcli.Status__c = 'Active';\n\taddCLI.add(cli);\n\t}\n\tinsert addCLI;\n}\nId contractId = contract.Id; \n//Extra at home Characteristic\nSet<String> productCodes = new Set<String>{ \n'3790','3791','3653','3628','3792','3793','3783','3629','3794','3795','3781','3780','3796','3797','3784','3782','3783','3784','3792','3796'}; \nSet<String> values = new Set<String>{ \n'130:001','130:002','130:003','130:004','130:005','130:006','130:007','130:020','130:021','130:022','130:023','130:024','130:025','130:026','130:027','130:028', \n'130:029','130:030','131:001','131:002','131:003','131:004','131:005','133:001','133:002','133:003','133:004','133:005','134:001'}; \nList<Contract_Line_Item__c> items = [SELECT Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodes AND Contract__c = :contractId]; \nList<Contract_Line_Item_Detail__c> details = new List<Contract_Line_Item_Detail__c>(); \nif(items.size() > 0){\n\tfor(Contract_Line_Item__c item : items){ \n\tfor(String value : values){ \n\tString characteristic = value.substring(0, value.indexOf(':'));  \n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = characteristic, \n\tContract_Line_Item__c = item.Id \n\t);\n\tdetails.add(detail); \n\t} \n\t} \n\tinsert details;\n}\n//Standaard Zending/Alleen Huisadres Characteristic\nList<Contract_Line_Item__c> prod = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('3385') AND Contract__c = :contractId limit 1];\nif(prod.size() > 0){\n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '101', \n\tValue__c = '008', \n\tContract_Line_Item__c = prod[0].Id); \n\tinsert detail;\n} \n//EPS COD Characteristic \nList<Contract_Line_Item__c> prodEPS = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('4924') AND Contract__c = :contractId limit 1];\nif(prodEPS.size() > 0){\n\tContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '002', \n\tValue__c = '011', \n\tContract_Line_Item__c = prod[0].Id); \n\tinsert detail;\n}\nList<Contract_Line_Item__c> delNeighbour = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN ('3437') AND Contract__c = :contractId limit 1];\nif(delNeighbour.size() > 0){\nContract_Line_Item_Detail__c detail = new Contract_Line_Item_Detail__c( \nCharacteristic__c = '002', \nValue__c = '014', \nContract_Line_Item__c = delNeighbour[0].Id\n); \ninsert detail;\n}\n//Same Day Delivery Characteristic\nList<Contract_Line_Item_Detail__c> detailsSDD = new List<Contract_Line_Item_Detail__c>(); \nSet<String> productCodesSDD = new Set<String>{ \n'3085','3083','3084','3087','3086','3089','3093','3094','3091','3090','3096','3097','3385','3389','3390','3089'};\nList<Contract_Line_Item__c> itemsSDD = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodesSDD AND Contract__c = :contractId];\nif(itemsSDD.size() > 0){\nfor(Contract_Line_Item__c itemSDD : itemsSDD){ \n\tContract_Line_Item_Detail__c detailSDD = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '118', \n\tValue__c = '015', \n\tContract_Line_Item__c = itemSDD.Id ); \n\tdetailsSDD.add(detailSDD); \n\t}\n\tinsert detailsSDD;\n} \n//Same Day Delivery Characteristic\nList<Contract_Line_Item_Detail__c> detailsSDD2 = new List<Contract_Line_Item_Detail__c>(); \nSet<String> productCodesSDD2 = new Set<String>{ \n'3083','3084'};\nList<Contract_Line_Item__c> itemsSDD2 = [SELECT Id, Product__r.ProductID__c FROM Contract_Line_Item__c WHERE Product__r.ProductID__c IN :productCodesSDD2 AND Contract__c = :contractId];\nif(itemsSDD2.size() > 0){\nfor(Contract_Line_Item__c itemSDD : itemsSDD2){ \n\tContract_Line_Item_Detail__c detailSDD = new Contract_Line_Item_Detail__c( \n\tCharacteristic__c = '118', \n\tValue__c = '024', \n\tContract_Line_Item__c = itemSDD.Id ); \n\tdetailsSDD2.add(detailSDD); \n\t}\n\tinsert detailsSDD2;\n} "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Sender address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=if ('Sender' == 'Sender') {\n\n\tRecordType accRt = [ SELECT Id \n\tFROM RecordType where DeveloperName = 'Sender' \n\tAND SobjectType = 'Address__c' \n\tLIMIT 1 ];\n\n\tParty_Code__c pc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode1}}' limit 1];\n\tParty_Code__c gpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{GlobalPartyCode}}' limit 1];\n\tParty_Code__c ppc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode2}}' limit 1];\n\tParty_Code__c rpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode3}}' limit 1];\n\n\tCountries__c country = [SELECT Id FROM Countries__c WHERE Country_Code__c = 'NL' limit 1];\n\n\tAddress__c newAddress = new Address__c();\n\tnewAddress.Street_name__c = 'Siriusdreef';\n\tnewAddress.House_number__c = '60';\n\tnewAddress.City__c = 'Hoofddorp';\n\tnewAddress.Postal_Code__c = '2132WT';\n\tnewAddress.Country__c = country.Id;\n\tnewAddress.Recipient_Last_Name__c = 'Test Sender Netherlands';\n\tnewAddress.Account__c = '{{Id}}';\n\tnewAddress.RecordTypeId = accRt.Id;\n\tnewAddress.Global_Pack_Party_code__c = gpc.Id;\n\tnewAddress.Party_Code__c = pc.Id;\n\tnewAddress.Pickup_Plus_Party_code__c = ppc.Id;\n\tnewAddress.Return_Party_code__c = rpc.Id;\nif('null' != 'null') \n\tnewAddress.Building_name__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Region__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Area__c = 'null'; \n\tnewAddress.Phone_number__c = '+31659263848'; \n\tnewAddress.Recipient_Email__c = 'test@rasdssdsdf.nl'; \n\tnewAddress.Bank_Account__c = 'NL82ABNA1663368082'; \n\tinsert newAddress;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "if ('Sender' == 'Sender') {\n\n\tRecordType accRt = [ SELECT Id \n\tFROM RecordType where DeveloperName = 'Sender' \n\tAND SobjectType = 'Address__c' \n\tLIMIT 1 ];\n\n\tParty_Code__c pc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode1}}' limit 1];\n\tParty_Code__c gpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{GlobalPartyCode}}' limit 1];\n\tParty_Code__c ppc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode2}}' limit 1];\n\tParty_Code__c rpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode3}}' limit 1];\n\n\tCountries__c country = [SELECT Id FROM Countries__c WHERE Country_Code__c = 'NL' limit 1];\n\n\tAddress__c newAddress = new Address__c();\n\tnewAddress.Street_name__c = 'Siriusdreef';\n\tnewAddress.House_number__c = '60';\n\tnewAddress.City__c = 'Hoofddorp';\n\tnewAddress.Postal_Code__c = '2132WT';\n\tnewAddress.Country__c = country.Id;\n\tnewAddress.Recipient_Last_Name__c = 'Test Sender Netherlands';\n\tnewAddress.Account__c = '{{Id}}';\n\tnewAddress.RecordTypeId = accRt.Id;\n\tnewAddress.Global_Pack_Party_code__c = gpc.Id;\n\tnewAddress.Party_Code__c = pc.Id;\n\tnewAddress.Pickup_Plus_Party_code__c = ppc.Id;\n\tnewAddress.Return_Party_code__c = rpc.Id;\nif('null' != 'null') \n\tnewAddress.Building_name__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Region__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Area__c = 'null'; \n\tnewAddress.Phone_number__c = '+31659263848'; \n\tnewAddress.Recipient_Email__c = 'test@rasdssdsdf.nl'; \n\tnewAddress.Bank_Account__c = 'NL82ABNA1663368082'; \n\tinsert newAddress;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- GET-Address_ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Address_Id\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 10000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select id from Address_Book__c where Account__r.Customer_Number__c ='{{Customer_Number}}' limit 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select id from Address_Book__c where Account__r.Customer_Number__c ='{{Customer_Number}}' limit 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_SenderAddress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Sender\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\",\r\n            \"Party_code__c\": \"{{DomesticPartyCode1}}\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Sender Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_RecipientAddress_Single",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Recipient\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_RecipientAddress_Multiple_NL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Recipient\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t},\r\n        {\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET_AllAddresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/api/v1/experience/desktop/customers/{{Customer_Number}}?data=INVOICE,RETURN_ADDRESSES,SENDER_ADDRESSES,CORRESPONDANCE_ADDRESS,BUSINESS_ADDRESS,COST_CENTER",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"api",
+								"v1",
+								"experience",
+								"desktop",
+								"customers",
+								"{{Customer_Number}}"
+							],
+							"query": [
+								{
+									"key": "data",
+									"value": "INVOICE,RETURN_ADDRESSES,SENDER_ADDRESSES,CORRESPONDANCE_ADDRESS,BUSINESS_ADDRESS,COST_CENTER"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create-account-configuration-values",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List configurationSettingList = [SELECT Id From Configuration_Setting__c Where Name IN ( 'Terms and Conditions' , 'Verwerkersovereenkomst Modal')];\n\n//Account acc = [SELECT Id from Account where Customer_Number__c = '{{Customer_number}}' limit 1];\nList accConfigValueList = new List();\nif(configurationSettingList != null &=& !configurationSettingList.isEmpty()){\n List configurationValueList = [SELECT Id From Configuration_value__c Where Configuration_setting__c IN :configurationSettingList];\n if(configurationValueList != null &=& !configurationValueList.isEmpty()){\n\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[0].Id,\n Configuration_Value__c = configurationValueList[0].Id,\n Account__c = '{{Id}}'\n ));\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[1].Id,\n Configuration_Value__c = configurationValueList[1].Id,\n Account__c = '{{Id}}'\n ));\n\n insert accConfigValueList;\n }\n }",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List configurationSettingList = [SELECT Id From Configuration_Setting__c Where Name IN ( 'Terms and Conditions' , 'Verwerkersovereenkomst Modal')];\n\n//Account acc = [SELECT Id from Account where Customer_Number__c = '{{Customer_number}}' limit 1];\nList accConfigValueList = new List();\nif(configurationSettingList != null "
+								},
+								{
+									"key": null,
+									"value": ""
+								},
+								{
+									"key": " !configurationSettingList.isEmpty()){\n List configurationValueList ",
+									"value": " [SELECT Id From Configuration_value__c Where Configuration_setting__c IN :configurationSettingList];\n if(configurationValueList != null "
+								},
+								{
+									"key": null,
+									"value": ""
+								},
+								{
+									"key": " !configurationValueList.isEmpty()){\n\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c ",
+									"value": " configurationSettingList[0].Id,\n Configuration_Value__c = configurationValueList[0].Id,\n Account__c = '{{Id}}'\n ));\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[1].Id,\n Configuration_Value__c = configurationValueList[1].Id,\n Account__c = '{{Id}}'\n ));\n\n insert accConfigValueList;\n }\n }"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Assign AccountId to the logged User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"//pm.test(\"TestCase Status\", function () {",
+							" //   pm.response.to.have.status(200);",
+							"//});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "TC2_BP- DecisionTree_ NL-NL",
+			"item": [
+				{
+					"name": "SQL-GetRecepientAddressId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"RecepientAddressId\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Recipient' AND Country_Code_FromLookup__c = 'NL' LIMIT 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Recipient' AND Country_Code_FromLookup__c = 'NL' LIMIT 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-GetSenderAddressId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"SenderAddressId\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Sender' AND Country_Code_FromLookup__c = 'NL' LIMIT 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Sender' AND Country_Code_FromLookup__c = 'NL' LIMIT 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level1 : NL to NL-GetQuestion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"    pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Letterbox_Package_Max_2kg\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Parcel\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cargo\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_RegisteredLabel\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Extra_Home\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Food\");\r",
+									"    });\r",
+									"\r",
+									"    var jsonData = JSON.parse(responseBody);\r",
+									"        pm.collectionVariables.set(\"OptionId_LetterBox\", jsonData.questions[0].options[0].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Parcel\", jsonData.questions[0].options[1].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_cargo\", jsonData.questions[0].options[2].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_registered\", jsonData.questions[0].options[3].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Extra_Home\", jsonData.questions[0].options[4].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Pharma\", jsonData.questions[0].options[5].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Food\", jsonData.questions[0].options[6].optionId);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestionForFirstAnswer",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestionForFirstAnswer"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 1 . GetQuestion_Letterbox_Package_Max_2kg",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Letterbox_Packet_PTP\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Letterbox_Wholesale\");\r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_Letterbox_Packet_PTP\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Letterbox_Wholesale\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_LetterBox}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 1.1 GetQuestion_Letterbox_Packet_PTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Letterbox_Packet_PTP}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 1.2 GetQuestion_Letterbox_Wholesale",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Letterbox_Wholesale}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 2. GetQuestion_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"At_recipients_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"At_post_office\");\r",
+									"    });\r",
+									"\r",
+									"            var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_home_address\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_post_office\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Parcel}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 2.1 GetQuestion_At_recipients_home_address_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Increased_insurance\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Send_return_if_undelivered\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Same_day\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sunday_Delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_before_9\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_before_10\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_before_12\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_next_day\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"ID_check_at_door\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Check_leeftijdsgrens_18\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Check_leeftijdsgrens_18_bij_buren\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Check_geboortedatum\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_home_address}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 2.2 GetQuestion_At_post_office_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Increased_insurance\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Notification\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_post_office}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 3.  GetQuestion_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Piece_good\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Halfed_sized_EUR_pallet\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pallet\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Flexible_trolley\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Block_Pallet\");\r",
+									"    });\r",
+									"\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_Piece_good\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Halfed_sized_EUR_pallet\", jsonData.questions[0].options[1].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Pallet\", jsonData.questions[0].options[2].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Flexible_trolley\", jsonData.questions[0].options[3].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Block_Pallet\", jsonData.questions[0].options[4].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_cargo}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.1 GetQuestion_Piece_good_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"ADR\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Piece_good}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.2 GetQuestion_Halfed_sized_EUR_pallet_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Halfed_sized_EUR_pallet}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.3 GetQuestion_pallet_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"ADR\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Pallet}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.4 GetQuestion_Flexible_trolley_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Flexible_trolley}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.5 GetQuestion_Block_Pallet_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"AS_Delivery_on_floor\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"AS_Delivery_on_specific_dept\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"AS_Box_truck_adress\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"AS_Destacking_of_goods\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Block_Pallet}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 4. GetQuestion_BP2_RM_RegisteredLabel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Post_Paid\");\r",
+									"        //pm.expect(pm.response.text()).to.include(\"BP2_RM_Pre_Paid\");\r",
+									"     \r",
+									"    });\r",
+									"    var jsonData = JSON.parse(responseBody);\r",
+									"        pm.collectionVariables.set(\"OptionId_BP2_RM_Post_Paid\", jsonData.questions[0].options[0].optionId);\r",
+									"       // pm.collectionVariables.set(\"OptionId_BP2_RM_Pre_Paid\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_registered}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 4.1 GetQuestion_BP2_RM_Post_Paid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Mail\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Parcel\");\r",
+									"    });\r",
+									"    var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_BP2_RM_Mail\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_RM_Parcel\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_BP2_RM_Post_Paid}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 4.1.1 GetQuestion_BP2_RM_Mail_Post_Paid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Standard_Registered\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Insured\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Identification_check\");\r",
+									"    });\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_BP2_RM_Standard_Registered\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_RM_Insured\", jsonData.questions[0].options[1].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_RM_Identification_check\", jsonData.questions[0].options[2].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_BP2_RM_Mail}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level5 : 4.1.1.1 GetQuestion_BP2_RM_Standard_Registered",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Single_item\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Bulk_mail\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_BP2_RM_Standard_Registered}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level5 : 4.1.1.2 GetQuestion_BP2_RM_Insured",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Single_item\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Bulk_mail\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_RM_Insured}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level5 : 4.1.1.3 GetQuestion_BP2_RM_Identification_check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Check_geboortedatum\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Age_Check\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_RM_Identification_check}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 4.1.2 GetQuestion_BP2_RM_Parcel_Post_Paid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Standard_Registered\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Insured\");\r",
+									"    });\r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_Parcel_RM_Standard_Registered\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Parcel_Insured\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_RM_Parcel}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level5 : 4.1.2.1 GetQuestion_BP2_RM_Standard_Registered_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_Single_item\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Bulk_mail\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Parcel_RM_Standard_Registered}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level5 : 4.1.2.2 GetQuestion_BP2_RM_Insured_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_0_10_KG\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"BP2_RM_10_30_KG\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Parcel_Insured}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level 3 : 4.2 GetQuestion_BP2_RM_Pre_Paid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"       // pm.expect(pm.response.text()).to.include(\"BP2_RM_Registered_mail_pre_paid\");\r",
+									"       // pm.expect(pm.response.text()).to.include(\"BP2_RM_Insured_mail_pre_paid\");\r",
+									"        //pm.expect(pm.response.text()).to.include(\"BP2_RM_Registered_parcel_pre_paid\");\r",
+									"        //pm.expect(pm.response.text()).to.include(\"BP2_RM_Insured_parcel_pre_paid\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"a0x3N000001LTiSQAW\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 5. GetQuestion_Extra_Home",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"One_man\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Two_man\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_One_man\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_Two_man\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Extra_Home}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 5.1 GetQuestion_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Doorstep_service\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Top_service\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_Doorstep\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_Top\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_One_man}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 5.1.1 GetQuestion_Doorstep_service_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"     \r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Doorstep}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 5.1.2 GetQuestion_Top_service_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Top}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 5.2 GetQuestion_TwoMans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Doorstep_service\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Top_service\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_DoorstepTwoMan\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_TopTwoMan\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Two_man}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 5.2.1 GetQuestion_Doorstep_service_TwoMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"     \r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_DoorstepTwoMan}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 5.2.2 GetQuestion_Top_service_TwoMans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cash_on_Delivery\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_TopTwoMan}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 6. GetQuestion_Pharma",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pallet\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"parcel\");\r",
+									"     \r",
+									"    });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_PalletPharma\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_parcelPharma\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Pharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 6.1 GetQuestion_Pharma_Pallet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_2_8\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_15_25\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_PalletPharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 6.2 GetQuestion_Pharma_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_2_8\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_15_25\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_parcelPharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 7. GetQuestion_Food",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Food_Cold\");\r",
+									"     \r",
+									"    });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_Food_Standard\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_Food_Cold\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Food}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 7.1 GetQuestion_Food_Standard",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"     \r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Food_Standard}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 7.2 GetQuestion_Food_Cold",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_before_12\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Evening_delivery\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Morning_before_12\");\r",
+									"     \r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Food_Cold}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": true,\r\n    \"isCollection\": false,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC3_BP- DecisionTree_PickUp_ NL-NL",
+			"item": [
+				{
+					"name": "SQL-GetRecepientAddressId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"RecepientAddressId\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Recipient' AND Country_Code_FromLookup__c = 'NL' LIMIT 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Recipient' AND Country_Code_FromLookup__c = 'NL' LIMIT 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-GetSenderAddressId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"SenderAddressId\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Sender' AND Country_Code_FromLookup__c = 'NL' LIMIT 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id FROM Address__c WHERE Customer_Number__c = '{{Customer_Number}}' AND RecordType.Name = 'Sender' AND Country_Code_FromLookup__c = 'NL' LIMIT 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level1 : NL to NL-GetQuestion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"    pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Parcel\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Extra_Home\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Cargo\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma\");\r",
+									"    });\r",
+									"\r",
+									"    var jsonData = JSON.parse(responseBody);\r",
+									"        pm.collectionVariables.set(\"OptionId_Parcel\", jsonData.questions[0].options[0].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Extra_Home\", jsonData.questions[0].options[1].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_cargo\", jsonData.questions[0].options[2].optionId);\r",
+									"        pm.collectionVariables.set(\"OptionId_Pharma\", jsonData.questions[0].options[3].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestionForFirstAnswer",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestionForFirstAnswer"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 1. GetQuestion_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Collection_Basic\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Collection_plus\");\r",
+									"    });\r",
+									"\r",
+									"            var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_Collection_Basic\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Collection_plus\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Parcel}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 1.1 GetQuestion_Collection_Basic_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Collection_Basic}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 1.2 GetQuestion_Collection_Plus_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Increased_insurance\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Collection_plus}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 2. GetQuestion_Extra_Home",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"One_man\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Two_man\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_One_man\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_Two_man\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Extra_Home}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 2.1 GetQuestion_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Doorstep_service\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Top_service\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_Doorstep\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_Top\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_One_man}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 2.1.1 GetQuestion_Doorstep_service_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");  \r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Doorstep}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 2.1.2 GetQuestion_Top_service_OneMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Top}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 2.2 GetQuestion_TwoMans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Doorstep_service\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Top_service\");\r",
+									"     \r",
+									"    });\r",
+									"\r",
+									"        var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_DoorstepTwoMan\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_TopTwoMan\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_Two_man}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 2.2.1 GetQuestion_Doorstep_service_TwoMan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"   });\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_DoorstepTwoMan}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level4 : 2.2.2 GetQuestion_Top_service_TwoMans",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"  });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_TopTwoMan}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 3.  GetQuestion_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Piece_good\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pallet\");\r",
+									"    });\r",
+									"\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"OptionId_Piece_good\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"OptionId_Pallet\", jsonData.questions[0].options[1].optionId);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_cargo}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.1 GetQuestion_Piece_good_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"ADR\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Piece_good}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 3.2 GetQuestion_pallet_Cargo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Sign_for_receipt\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Only_at_home_address\");\r",
+									"        //pm.expect(pm.response.text()).to.include(\"ADR\");\r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Pallet}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level2 : 4. GetQuestion_Pharma",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pallet\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"parcel\");\r",
+									"     \r",
+									"    });\r",
+									"    \r",
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"optionId_PalletPharma\", jsonData.questions[0].options[0].optionId);\r",
+									"pm.collectionVariables.set(\"optionId_parcelPharma\", jsonData.questions[0].options[1].optionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{OptionId_Pharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 4.1 GetQuestion_Pharma_Pallet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_2_8\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_15_25\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_PalletPharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Level3 : 4.2 GetQuestion_Pharma_Parcel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function ()\r",
+									"{\r",
+									"    pm.response.to.have.status(200);\r",
+									" });\r",
+									"\r",
+									"     pm.test(\"Body matches string\", function () {\r",
+									"        pm.expect(pm.response.text()).to.include(\"Standard\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_2_8\");\r",
+									"        pm.expect(pm.response.text()).to.include(\"Pharma_15_25\");\r",
+									"     \r",
+									"    });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parentOptionId\": \"{{optionId_parcelPharma}}\",\r\n    \"sendingAddressId\": \"{{SenderAddressId}}\",\r\n    \"recipientAddressIds\": [\r\n        \"{{RecepientAddressId}}\"\r\n    ],\r\n    \"isSending\": false,\r\n    \"isCollection\": true,\r\n    \"shipmentId\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=PSM_Product_Decision_Tree_VFC&method=getQuestion",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "PSM_Product_Decision_Tree_VFC"
+								},
+								{
+									"key": "method",
+									"value": "getQuestion"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC4_DeleteTestData",
+			"item": [
+				{
+					"name": "Apex Execute-Delete Shipments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User-Config-Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Configuration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList !=null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\n\t\tUser u = \tuserList[0];\n\t\t\n\t\tList<User_Configuration_Value__c> confValues = [SELECT Id FROM User_Configuration_Value__c WHERE Configuration_setting__c =: configSetting.Id AND Configuration_value__c =: configValue.Id AND User__c =: u.Id];\n\n\t\tif (confValues != null %26%26 confValues.size() > 0){\n\t\t\tdelete confValues;\n\n\t\t}\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Configuration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList !=null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\n\t\tUser u = \tuserList[0];\n\t\t\n\t\tList<User_Configuration_Value__c> confValues = [SELECT Id FROM User_Configuration_Value__c WHERE Configuration_setting__c =: configSetting.Id AND Configuration_value__c =: configValue.Id AND User__c =: u.Id];\n\n\t\tif (confValues != null %26%26 confValues.size() > 0){\n\t\t\tdelete confValues;\n\n\t\t}\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account-Config-Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Account_Configuration_Value__c> accConValue = [SELECT Id FROM Account_Configuration_Value__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (accConValue != null %26%26 accConValue.size() > 0 ){\n\tdelete accConValue;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Account_Configuration_Value__c> accConValue = [SELECT Id FROM Account_Configuration_Value__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (accConValue != null %26%26 accConValue.size() > 0 ){\n\tdelete accConValue;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Product Authorisations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<PostNL_Contract__c> contractList = [SELECT Id FROM PostNL_Contract__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (contractList != null %26%26 contractList.size() > 0 ){\n\tdelete contractList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<PostNL_Contract__c> contractList = [SELECT Id FROM PostNL_Contract__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (contractList != null %26%26 contractList.size() > 0 ){\n\tdelete contractList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete addresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Customer_Number",
+			"value": "1645536455274"
+		},
+		{
+			"key": "email",
+			"value": "1645536455274Postman@PostNLtest.com"
+		},
+		{
+			"key": "UPN",
+			"value": "AV-1645536455274@customer.dmz.ref"
+		},
+		{
+			"key": "AccountName",
+			"value": "PostmanAccountDecisionTree"
+		},
+		{
+			"key": "ContactFirstName",
+			"value": "Postman"
+		},
+		{
+			"key": "ContactLastName",
+			"value": "DecisionTree"
+		},
+		{
+			"key": "userFirstName",
+			"value": "DecisionTree"
+		},
+		{
+			"key": "userLastName",
+			"value": "TestUser"
+		},
+		{
+			"key": "userAlias",
+			"value": "BP_PPF"
+		},
+		{
+			"key": "DomesticPartyCode1",
+			"value": "H24S"
+		},
+		{
+			"key": "DomesticPartyCode2",
+			"value": "D29H"
+		},
+		{
+			"key": "DomesticPartyCode3",
+			"value": "G27K"
+		},
+		{
+			"key": "GlobalPartyCode",
+			"value": "I121K5"
+		},
+		{
+			"key": "ReturnAddress_Id",
+			"value": ""
+		},
+		{
+			"key": "ReturnAddress_Name",
+			"value": ""
+		},
+		{
+			"key": "RecepientAddressId",
+			"value": ""
+		},
+		{
+			"key": "SenderAddressId",
+			"value": ""
+		},
+		{
+			"key": "OptionId_LetterBox",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel",
+			"value": ""
+		},
+		{
+			"key": "OptionId_cargo",
+			"value": ""
+		},
+		{
+			"key": "OptionId_registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Extra_Home",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Pharma",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Food",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Letterbox_Packet_PTP",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Letterbox_Wholesale",
+			"value": ""
+		},
+		{
+			"key": "OptionId_home_address",
+			"value": ""
+		},
+		{
+			"key": "OptionId_post_office",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Piece_good",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Halfed_sized_EUR_pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Flexible_trolley",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Block_Pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Post_Paid",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Mail",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Parcel",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Standard_Registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Insured",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Identification_check",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel_RM_Standard_Registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel_Insured",
+			"value": ""
+		},
+		{
+			"key": "NL_Recepient_Id",
+			"value": ""
+		},
+		{
+			"key": "DE_Recepient_Id",
+			"value": ""
+		},
+		{
+			"key": "NL_Sender_Id",
+			"value": ""
+		},
+		{
+			"key": "NL_return_Id",
+			"value": ""
+		},
+		{
+			"key": "Product_Id_3085",
+			"value": ""
+		},
+		{
+			"key": "Product_Id_4950",
+			"value": ""
+		},
+		{
+			"key": "PartyCode_Id_WXXY",
+			"value": ""
+		},
+		{
+			"key": "FirstShipment",
+			"value": ""
+		},
+		{
+			"key": "SecondShipment",
+			"value": ""
+		},
+		{
+			"key": "shipmentCount",
+			"value": ""
+		},
+		{
+			"key": "label_PDF_Count",
+			"value": ""
+		},
+		{
+			"key": "Count_PreAnnouncedShipments",
+			"value": ""
+		},
+		{
+			"key": "Id",
+			"value": ""
+		},
+		{
+			"key": "Address_Id",
+			"value": ""
+		},
+		{
+			"key": "totalSize",
+			"value": ""
+		},
+		{
+			"key": "Sender_Address_Id",
+			"value": ""
+		},
+		{
+			"key": "Sender_Address_Name",
+			"value": ""
+		},
+		{
+			"key": "ImportFileNumber",
+			"value": "IF-001265750"
+		},
+		{
+			"key": "File_Id",
+			"value": ""
+		},
+		{
+			"key": "Import_Id",
+			"value": ""
+		},
+		{
+			"key": "One_man",
+			"value": ""
+		},
+		{
+			"key": "Two_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_One_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_Two_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_Doorstep",
+			"value": ""
+		},
+		{
+			"key": "optionId_Top",
+			"value": ""
+		},
+		{
+			"key": "optionId_DoorstepTwoMan",
+			"value": ""
+		},
+		{
+			"key": "optionId_TopTwoMan",
+			"value": ""
+		},
+		{
+			"key": "optionId_PalletPharma",
+			"value": ""
+		},
+		{
+			"key": "optionId_parcelPharma",
+			"value": ""
+		},
+		{
+			"key": "optionId_Food_Standard",
+			"value": ""
+		},
+		{
+			"key": "optionId_Food_Cold",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Collection_Basic",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Collection_plus",
+			"value": ""
+		},
+		{
+			"key": "NumberOfTries",
+			"value": "1"
+		}
+	]
+}

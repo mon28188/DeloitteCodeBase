@@ -1,0 +1,2887 @@
+{
+	"info": {
+		"_postman_id": "13cfd777-012f-4ae4-9da9-48d954ac755b",
+		"name": "BP_ImportShipment_CRUCIAL",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SalesforceConnection",
+			"item": [
+				{
+					"name": "GenerateToken",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);\r",
+									"postman.setEnvironmentVariable(\"instance_url\", jsonData.instance_url);\r",
+									"postman.setEnvironmentVariable(\"token_type\", jsonData.token_type);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "{{grant_type}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/oauth2/token",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"oauth2",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC1_Create_Test_Data",
+			"item": [
+				{
+					"name": "Apex Execute-CreateAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/*\r",
+									"const dateNow= new Date();\r",
+									"pm.collectionVariables.set('Customer_Number', dateNow.getTime());\r",
+									"pm.collectionVariables.set('email', (pm.collectionVariables.get(\"Customer_Number\"))+(\"Postman@PostNLtest.com\"));\r",
+									"pm.collectionVariables.set('UPN', (\"AV-\")+(pm.collectionVariables.get(\"Customer_Number\"))+(\"@customer.dmz.ref\"));\r",
+									"\r",
+									"function createPartyCode(length) {\r",
+									"    var partyCode = \"\"\r",
+									"    var sourceString = \"AJLBJK158FDBFDBKYENXDB L56FGFDGFH45GHG5352H253FDSNNMH125412HF45653HG53623GFF2323GHJMKLLKDKG,FIFM,MG7821FGFHGF65FFHGFHYGCLGBM97561779623223323HGXCTRADSADSHJDGFDHGYHHJDGHSWJKFGHGHGHDGFGFJLDS26565625646564212GFVDSFFDS121231KLHGG45ASDFVG6476545456454\";\r",
+									"    for (let i = 0; i < length; i++) {\r",
+									"        partyCode += sourceString.charAt(Math.floor(Math.random() * sourceString.length))\r",
+									"    }\r",
+									"    return partyCode;\r",
+									"}\r",
+									"\r",
+									"  pm.collectionVariables.set('DomesticPartyCode1', createPartyCode(4));  \r",
+									"  pm.collectionVariables.set('DomesticPartyCode2', createPartyCode(4));\r",
+									"  pm.collectionVariables.set('DomesticPartyCode3', createPartyCode(4));  \r",
+									"  pm.collectionVariables.set('GlobalPartyCode', createPartyCode(6));\r",
+									"\r",
+									"*/"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "RecordType accRt = [select Id from RecordType where DeveloperName  = 'Business_Account' and SobjectType = 'Account' limit 1];\n\nList<Account> testAccount = [SELECT Id FROM Account WHERE Customer_Number__c = '{{Customer_Number}}'  LIMIT 1];\n\nif(testAccount.isEmpty()) {\n\tAccount acc = new Account();\n\t\tacc.RecordType = accRt ;\n\t\tacc.Name = '{{AccountName}}';\n\t\tacc.Customer_Number__c = '{{Customer_Number}}';\n\t\tacc.Type = 'Active';\n\t\tacc.Account_Status__c = 'Verified';\n\t\tinsert acc;\n} "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-VerifyAccount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Id\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id, Name FROM Account WHERE Customer_Number__c ='{{Customer_Number}}'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-RunToPickPendingJobs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=DBO_JobItemBatchStarter.start();",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "DBO_JobItemBatchStarter.start();"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateContact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> c = [select Id from Contact where UPN__c =  '{{UPN}}' limit 1];\nif(c.isEmpty()){\nContact cont = new Contact();\ncont.Salutation = 'Sir';\ncont.FirstName = '{{ContactFirstName}}';\ncont.LastName = '{{ContactLastName}}';\ncont.AccountId = '{{Id}}';\ncont.Status__c = 'Active';\ncont.Language__c = 'nl_NL';\ncont.Email = '{{email}}';\ncont.UPN__c = '{{UPN}}';\ninsert cont;\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-CreateUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Contact con = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\t\t\n\nProfile pr = [SELECT Id FROM Profile where name = 'MijnPostNL Portal User' Limit 1];\n\n\tUser u = new User();\n\t\tu.FirstName = '{{userFirstName}}';\n\t\tu.LastName = '{{userLastName}}';\n\t\tu.Alias = '{{userAlias}}';\n\t\tu.contactId = con.Id;\n\t\tu.Email = '{{email}}';\n\t\tu.Username = '{{email}}';\n\t\tu.profileId = pr.Id;\n\t\tu.TimeZoneSidKey = 'Europe/Amsterdam';\n\t\tu.LocaleSidKey = 'nl_NL';\n        u.Gender__c='Male';\n        u.Salutation__c= 'Mr';\n        u.Initials__c= 'PU';\n\t\tu.EmailEncodingKey = 'UTF-8';\t\t\n\t\tu.LanguageLocaleKey =  'nl_NL';\n\t\tu.UPN__c = '{{UPN}}';\n\t\t\ntry {\n\tDatabase.DmlOptions dmo = new Database.DmlOptions();\ndmo.EmailHeader.triggerUserEmail = false;\ndmo.EmailHeader.triggerAutoResponseEmail = false;\ndmo.EmailHeader.triggerOtherEmail = false;\n\tDatabase.insert(u, dmo);\n} catch(DMLException ex){\n\tif(ex.getDmlType(0) != StatusCode.PORTAL_USER_ALREADY_EXISTS_FOR_CONTACT\n\t\t\t\t\t\t\t\t%26%26 ex.getDmlType(0) != StatusCode.DUPLICATE_USERNAME){\n\t\tthrow ex;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-EnableAllUserAuthorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_authorization__c> userAuthListAdminUser = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}' AND User__c = :UserInfo.getUserId()];\n\nif(userAuthListAdminUser.isEmpty()){\nList<User_authorization__c> userAuthList = [select id, name, Account__c, enabled__c, Authorization__r.Name from User_authorization__c where Account__c = '{{Id}}'];\n\nList<User_authorization__c> enabledAuthorizations = new List<User_authorization__c>();\nList<User_authorization__c> insertAuthorizations = new List<User_authorization__c>();\nfor (User_authorization__c ua: userAuthList){\n\tif(ua.Authorization__r.Name == 'Track %26 Trace Read Only'){\n\t\tua.Enabled__c = false;\n\t} else {\n\t\tua.Enabled__c = true;\n\t}\n    User_authorization__c uaInsert = ua.clone();\n\tuaInsert.Id = null;\n    uaInsert.User__c = UserInfo.getUserId();\n    insertAuthorizations.add(uaInsert);\n    enabledAuthorizations.add(ua);\n}\ninsert insertAuthorizations;\nupdate enabledAuthorizations;\n\t\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create User Configuration Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User_configuration_value__c newUserConfigValue = new User_configuration_value__c();\n\nConfiguration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList != null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\t\n\t\tUser u = \tuserList[0];\n\n\t\tnewUserConfigValue.Configuration_setting__c = configSetting.Id;\n\t\tnewUserConfigValue.Configuration_value__c = configValue.Id;\n\t\tnewUserConfigValue.Enabled__c = false;\n\t\tnewUserConfigValue.User__c = u.Id;\n\n\t\tinsert newUserConfigValue;\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User_configuration_value__c newUserConfigValue = new User_configuration_value__c();\n\nConfiguration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList != null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\t\n\t\tUser u = \tuserList[0];\n\n\t\tnewUserConfigValue.Configuration_setting__c = configSetting.Id;\n\t\tnewUserConfigValue.Configuration_value__c = configValue.Id;\n\t\tnewUserConfigValue.Enabled__c = false;\n\t\tnewUserConfigValue.User__c = u.Id;\n\n\t\tinsert newUserConfigValue;\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-General",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode1}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode1}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden pakketten';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode1}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode1}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden pakketten';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-Pickup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode2}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode2}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden afhaalservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode2}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode2}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden afhaalservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Domestic-return",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode3}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode3}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden retourservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Domestic_{{DomesticPartyCode3}}';\n\tnewPartyCode.Party_Code__c  = '{{DomesticPartyCode3}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Voormelden retourservice';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Party Codes_Global",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Global_{{GlobalPartyCode}}';\n\tnewPartyCode.Party_Code__c  = '{{GlobalPartyCode}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Global Pack Range';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Party_code__c newPartyCode = new Party_code__c();\n\tnewPartyCode.Name = 'Global_{{GlobalPartyCode}}';\n\tnewPartyCode.Party_Code__c  = '{{GlobalPartyCode}}';\n\tnewPartyCode.Account__c = '{{Id}}';\n\tnewPartyCode.Type__c = 'Global Pack Range';\n\tnewPartyCode.Uses_own_Labels__c = FALSE;\n\tnewPartyCode.Uses_own_Barcodes__c = FALSE;\n\tnewPartyCode.Status__c = 'Active';\n\tnewPartyCode.Pre_Announcement_System__c='Business Portal';\n\t\t\n\ttry {\n\t\tinsert newPartyCode;\n\t}  catch( DMLException ex ) {\n\t\tif( ex.getDmlType(0) != StatusCode.DUPLICATE_VALUE ){\n\t\t\tthrow ex;\n\t\t}\n\t}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create Sender address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=if ('Sender' == 'Sender') {\n\n\tRecordType accRt = [ SELECT Id \n\tFROM RecordType where DeveloperName = 'Sender' \n\tAND SobjectType = 'Address__c' \n\tLIMIT 1 ];\n\n\tParty_Code__c pc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode1}}' limit 1];\n\tParty_Code__c gpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{GlobalPartyCode}}' limit 1];\n\tParty_Code__c ppc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode2}}' limit 1];\n\tParty_Code__c rpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode3}}' limit 1];\n\n\tCountries__c country = [SELECT Id FROM Countries__c WHERE Country_Code__c = 'NL' limit 1];\n\n\tAddress__c newAddress = new Address__c();\n\tnewAddress.Street_name__c = 'Siriusdreef';\n\tnewAddress.House_number__c = '60';\n\tnewAddress.City__c = 'Hoofddorp';\n\tnewAddress.Postal_Code__c = '2132WT';\n\tnewAddress.Country__c = country.Id;\n\tnewAddress.Recipient_Last_Name__c = 'Test Sender Netherlands';\n\tnewAddress.Account__c = '{{Id}}';\n\tnewAddress.RecordTypeId = accRt.Id;\n\tnewAddress.Global_Pack_Party_code__c = gpc.Id;\n\tnewAddress.Party_Code__c = pc.Id;\n\tnewAddress.Pickup_Plus_Party_code__c = ppc.Id;\n\tnewAddress.Return_Party_code__c = rpc.Id;\nif('null' != 'null') \n\tnewAddress.Building_name__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Region__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Area__c = 'null'; \n\tnewAddress.Phone_number__c = '+31659263848'; \n\tnewAddress.Recipient_Email__c = 'test@rasdssdsdf.nl'; \n\tnewAddress.Bank_Account__c = 'NL82ABNA1663368082'; \n\tinsert newAddress;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "if ('Sender' == 'Sender') {\n\n\tRecordType accRt = [ SELECT Id \n\tFROM RecordType where DeveloperName = 'Sender' \n\tAND SobjectType = 'Address__c' \n\tLIMIT 1 ];\n\n\tParty_Code__c pc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode1}}' limit 1];\n\tParty_Code__c gpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{GlobalPartyCode}}' limit 1];\n\tParty_Code__c ppc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode2}}' limit 1];\n\tParty_Code__c rpc = [SELECT Id FROM Party_Code__c WHERE Party_Code__c = '{{DomesticPartyCode3}}' limit 1];\n\n\tCountries__c country = [SELECT Id FROM Countries__c WHERE Country_Code__c = 'NL' limit 1];\n\n\tAddress__c newAddress = new Address__c();\n\tnewAddress.Street_name__c = 'Siriusdreef';\n\tnewAddress.House_number__c = '60';\n\tnewAddress.City__c = 'Hoofddorp';\n\tnewAddress.Postal_Code__c = '2132WT';\n\tnewAddress.Country__c = country.Id;\n\tnewAddress.Recipient_Last_Name__c = 'Test Sender Netherlands';\n\tnewAddress.Account__c = '{{Id}}';\n\tnewAddress.RecordTypeId = accRt.Id;\n\tnewAddress.Global_Pack_Party_code__c = gpc.Id;\n\tnewAddress.Party_Code__c = pc.Id;\n\tnewAddress.Pickup_Plus_Party_code__c = ppc.Id;\n\tnewAddress.Return_Party_code__c = rpc.Id;\nif('null' != 'null') \n\tnewAddress.Building_name__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Region__c = 'null';\n\tif('null' != 'null') \n\tnewAddress.Area__c = 'null'; \n\tnewAddress.Phone_number__c = '+31659263848'; \n\tnewAddress.Recipient_Email__c = 'test@rasdssdsdf.nl'; \n\tnewAddress.Bank_Account__c = 'NL82ABNA1663368082'; \n\tinsert newAddress;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL- GET-Address_ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set(\"Address_Id\", jsonData.records[0].Id);\r",
+									"//postman.setEnvironmentVariable(\"Id\", jsonData.records[0].Id);\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 10000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=select id from Address_Book__c where Account__r.Customer_Number__c ='{{Customer_Number}}' limit 1",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "select id from Address_Book__c where Account__r.Customer_Number__c ='{{Customer_Number}}' limit 1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_SenderAddress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Sender\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\",\r\n            \"Party_code__c\": \"{{DomesticPartyCode1}}\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Sender Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_RecipientAddress_Single",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Recipient\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create_RecipientAddress_Multiple_NL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"saveInAddressBook\": true,\r\n\t\"recordTypeName\": \"Recipient\",\r\n\t\"manualEntry\": false,\r\n\t\"mainAddressBook\": {\r\n\t\t\"attributes\": {\r\n\t\t\t\"type\": \"Address_Book__c\"\r\n\t\t},\r\n\t\t\"Id\": \"{{Address_Id}}\"\r\n\t},\r\n\t\"lstaddress\": [\r\n\t\t{\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t},\r\n        {\r\n\t\t\t\"attributes\": {\r\n\t\t\t\t\"type\": \"Address__c\"\r\n\t\t\t},\r\n\t\t\t\"City__c\": \"s-Gravenhage\",\r\n\t\t\t\"Postal_Code__c\": \"2595AK\",\r\n\t\t\t\"Recipient_Last_Name__c\": \"Test Recipient Netherlands \",\r\n\t\t\t\"House_number__c\": \"23\"\r\n\t\t}\r\n\t],\r\n\t\"linkAddressToAccount\": true,\r\n\t\"countryCodeSelected\": \"NL\",\r\n\t\"callbackInstance\": null,\r\n\t\"addressType\": \"shipment\",\r\n\t\"accountId\": \"{{Id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/ART?handler=BPG_AddressManagement_Service&method=save ",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"ART"
+							],
+							"query": [
+								{
+									"key": "handler",
+									"value": "BPG_AddressManagement_Service"
+								},
+								{
+									"key": "method",
+									"value": "save "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET_AllAddresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/api/v1/experience/desktop/customers/{{Customer_Number}}?data=INVOICE,RETURN_ADDRESSES,SENDER_ADDRESSES,CORRESPONDANCE_ADDRESS,BUSINESS_ADDRESS,COST_CENTER",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"api",
+								"v1",
+								"experience",
+								"desktop",
+								"customers",
+								"{{Customer_Number}}"
+							],
+							"query": [
+								{
+									"key": "data",
+									"value": "INVOICE,RETURN_ADDRESSES,SENDER_ADDRESSES,CORRESPONDANCE_ADDRESS,BUSINESS_ADDRESS,COST_CENTER"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Create-account-configuration-values",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List configurationSettingList = [SELECT Id From Configuration_Setting__c Where Name IN ( 'Terms and Conditions' , 'Verwerkersovereenkomst Modal')];\n\n//Account acc = [SELECT Id from Account where Customer_Number__c = '{{Customer_number}}' limit 1];\nList accConfigValueList = new List();\nif(configurationSettingList != null &=& !configurationSettingList.isEmpty()){\n List configurationValueList = [SELECT Id From Configuration_value__c Where Configuration_setting__c IN :configurationSettingList];\n if(configurationValueList != null &=& !configurationValueList.isEmpty()){\n\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[0].Id,\n Configuration_Value__c = configurationValueList[0].Id,\n Account__c = '{{Id}}'\n ));\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[1].Id,\n Configuration_Value__c = configurationValueList[1].Id,\n Account__c = '{{Id}}'\n ));\n\n insert accConfigValueList;\n }\n }",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List configurationSettingList = [SELECT Id From Configuration_Setting__c Where Name IN ( 'Terms and Conditions' , 'Verwerkersovereenkomst Modal')];\n\n//Account acc = [SELECT Id from Account where Customer_Number__c = '{{Customer_number}}' limit 1];\nList accConfigValueList = new List();\nif(configurationSettingList != null "
+								},
+								{
+									"key": null,
+									"value": ""
+								},
+								{
+									"key": " !configurationSettingList.isEmpty()){\n List configurationValueList ",
+									"value": " [SELECT Id From Configuration_value__c Where Configuration_setting__c IN :configurationSettingList];\n if(configurationValueList != null "
+								},
+								{
+									"key": null,
+									"value": ""
+								},
+								{
+									"key": " !configurationValueList.isEmpty()){\n\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c ",
+									"value": " configurationSettingList[0].Id,\n Configuration_Value__c = configurationValueList[0].Id,\n Account__c = '{{Id}}'\n ));\n accConfigValueList.add(new Account_Configuration_Value__c(\n Configuration_Setting__c = configurationSettingList[1].Id,\n Configuration_Value__c = configurationValueList[1].Id,\n Account__c = '{{Id}}'\n ));\n\n insert accConfigValueList;\n }\n }"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Assign AccountId to the logged User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"//pm.test(\"TestCase Status\", function () {",
+							" //   pm.response.to.have.status(200);",
+							"//});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "TC2_BP_ImportShipment",
+			"item": [
+				{
+					"name": "Create Import Definition",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create import definition mapping\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"senderAddress\": \"{{Sender_Address_Name}}\",\n    \"returnAddress\": \"{{ReturnAddress_Name}}\",\n    \"mappings\": {\n        \"shipmentDetail\": [\n            {\n                \"name\": \"product\",\n                \"columns\": [\n                    {\n                        \"value\": \"productcode\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"numberOfColli\",\n                \"columns\": [\n                    {\n                        \"value\": \"deliverytopostnl\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"recipientLastName\",\n                \"columns\": [\n                    {\n                        \"value\": \"companyname\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"floor\",\n                \"columns\": [\n                    {\n                        \"value\": \"insuredvalue\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"houseNumber\",\n                \"columns\": [\n                    {\n                        \"value\": \"codamount\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"postalCode\",\n                \"columns\": [\n                    {\n                        \"value\": \"codreference\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"country\",\n                \"columns\": [\n                    {\n                        \"value\": \"city\",\n                        \"isFixed\": false\n                    }\n                ]\n            }\n        ],\n        \"recipient\": [\n            {\n                \"name\": \"recipientLastName\",\n                \"columns\": [\n                    {\n                        \"value\": \"surname\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"recipientFirstName\",\n                \"columns\": [\n                    {\n                        \"value\": \"first_name\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"streetName\",\n                \"columns\": [\n                    {\n                        \"value\": \"street\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"houseNumber\",\n                \"columns\": [\n                    {\n                        \"value\": \"houseno\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"houseNumberAddition\",\n                \"columns\": [\n                    {\n                        \"value\": \"housenosuffix\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"postalCode\",\n                \"columns\": [\n                    {\n                        \"value\": \"postal_code\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"country\",\n                \"columns\": [\n                    {\n                        \"value\": \"countrycode\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"doorCode\",\n                \"columns\": [\n                    {\n                        \"value\": \"1234\",\n                        \"isFixed\": true\n                    }\n                ]\n            },\n            {\n                \"name\": \"phoneNumber\",\n                \"columns\": [\n                    {\n                        \"value\": \"mobilenumber\",\n                        \"isFixed\": false\n                    }\n                ]\n            },\n            {\n                \"name\": \"recipientEmail\",\n                \"columns\": [\n                    {\n                        \"value\": \"e-mail\",\n                        \"isFixed\": false\n                    }\n                ]\n            }\n        ],\n        \"postOffice\": [\n            {\n                \"name\": \"recipientOrganizationName\",\n                \"columns\": [\n                    {\n                        \"value\": \"aaaa\",\n                        \"isFixed\": true\n                    }\n                ]\n            },\n            {\n                \"name\": \"houseNumber\",\n                \"columns\": [\n                    {\n                        \"value\": \"123\",\n                        \"isFixed\": true\n                    }\n                ]\n            },\n            {\n                \"name\": \"postalCode\",\n                \"columns\": [\n                    {\n                        \"value\": \"123\",\n                        \"isFixed\": true\n                    }\n                ]\n            },\n            {\n                \"name\": \"country\",\n                \"columns\": [\n                    {\n                        \"value\": \"nl\",\n                        \"isFixed\": true\n                    }\n                ]\n            }\n        ],\n        \"pickupAddress\": [],\n        \"customsForm\": {\n            \"mappings\": [\n                {\n                    \"name\": \"customsParcelType\",\n                    \"columns\": [\n                        {\n                            \"value\": \"yourreference\",\n                            \"isFixed\": false\n                        }\n                    ]\n                }\n            ],\n            \"customsItems\": [\n                [\n                    {\n                        \"name\": \"customsWeightGrams\",\n                        \"columns\": [\n                            {\n                                \"value\": \"barcode\",\n                                \"isFixed\": false\n                            }\n                        ]\n                    }\n                ]\n            ]\n        }\n    },\n    \"importDefinition\": \"ImportShipmentCrucial\",\n    \"costcenter\": \"123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/api/v1/experience/desktop/customers/{{Customer_Number}}/shipments/imports/mappings",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"api",
+								"v1",
+								"experience",
+								"desktop",
+								"customers",
+								"{{Customer_Number}}",
+								"shipments",
+								"imports",
+								"mappings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Actual Import File",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create import file\", function() {",
+									"    pm.response.to.have.status(201); ",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"senderAddress\": \"{{Sender_Address_Name}}\",\n    \"returnAddress\": \"{{ReturnAddress_Name}}\",\n    \"costCenter\": \"123\",\n    \"importDefinition\": \"Standaard importdefinitie\",\n    \"delimiter\": \";\",\n    \"bodyBase64\": \"WW91clJlZmVyZW5jZTtDb21wYW55TmFtZTtTdXJuYW1lO0ZpcnN0TmFtZTtDb3VudHJ5Q29kZTtTdHJlZXQ7SG91c2VObztIb3VzZU5vU3VmZml4O1Bvc3Rjb2RlO0NpdHk7RW1haWw7TW9iaWxlTnVtYmVyO1Byb2R1Y3RDb2RlO0RlbGl2ZXJ5VG9Qb3N0bmw7QmFyY29kZTtDT0RBbW91bnQ7Q09EUmVmZXJlbmNlO0luc3VyZWRWYWx1ZQ0KSW1wb3J0U2hpcG1lbnQ7QUZDO1Rlc3RlcjtUaGVvO05MO1ByLiBCZWF0cml4bGFhbjsyMzs7MjU5NUFLO0RlbiBIYWFnOzs7MzA4NTs7Ozs7\",\n    \"fileName\": \"BP_StandardImport_Definition_Test1.csv\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/apexrest/api/v1/experience/desktop/customers/{{Customer_Number}}/shipments/imports",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"apexrest",
+								"api",
+								"v1",
+								"experience",
+								"desktop",
+								"customers",
+								"{{Customer_Number}}",
+								"shipments",
+								"imports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SQL-Import_Count_Validated_Shipments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var tries = parseInt(pm.collectionVariables.get(\"NumberOfTries\"));\r",
+									"pm.collectionVariables.set(\"shipmentCount\", jsonData.totalSize);\r",
+									"const maxAttempts = 100;\r",
+									"if (jsonData.totalSize === 0 && pm.collectionVariables.get(\"NumberOfTries\") < maxAttempts) {\r",
+									"    pm.collectionVariables.set(\"NumberOfTries\", tries + 1);\r",
+									"    setTimeout(function(){}, 1000);\r",
+									"    postman.setNextRequest(\"SQL-Import_Count_Validated_Shipments\");\r",
+									"}\r",
+									"\r",
+									"if(tries == 100) {\r",
+									"    pm.test(\"CountDBOJobItems\", function () {\r",
+									"        pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"    });\r",
+									"    pm.collectionVariables.set(\"NumberOfTries\", 1);\r",
+									"};\r",
+									"\r",
+									"if(jsonData.totalSize > 0) {\r",
+									"    pm.test(\"CountDBOJobItems\", function () {\r",
+									"        pm.expect(jsonData.totalSize).to.eql(1);\r",
+									"    });\r",
+									"\r",
+									"    pm.test(\"Status code is 200\", function () {\r",
+									"        pm.response.to.have.status(200);\r",
+									"    });\r",
+									"    pm.collectionVariables.set(\"NumberOfTries\", 1);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{instance_url}}/services/data/v43.0/query/?q=SELECT Id,Name FROM Shipment__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}' AND (Status__c = 'Validated' OR Status__c = 'Complete') AND Reference__c = 'ImportShipment'",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v43.0",
+								"query",
+								""
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "SELECT Id,Name FROM Shipment__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}' AND (Status__c = 'Validated' OR Status__c = 'Complete') AND Reference__c = 'ImportShipment'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Shipments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "TC3_DeleteTestData",
+			"item": [
+				{
+					"name": "Apex Execute-Delete Import definitions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Import_Definition__c> definitionsList = [SELECT Id FROM Import_Definition__c WHERE Name = 'PROVARCustomImportDefinition'];\nif (definitionsList != null %26%26 definitionsList.size() > 0){\ndelete definitionsList;}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Import_Definition__c> definitionsList = [SELECT Id FROM Import_Definition__c WHERE Name = 'PROVARCustomImportDefinition'];\nif (definitionsList != null %26%26 definitionsList.size() > 0){\ndelete definitionsList;}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Alerts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Alert__c> alertsList = [SELECT Id FROM Alert__c WHERE Shipment__r.Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( alertsList != null %26%26 alertsList.size() > 0) {\n\tdelete alertsList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Alert__c> alertsList = [SELECT Id FROM Alert__c WHERE Shipment__r.Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( alertsList != null %26%26 alertsList.size() > 0) {\n\tdelete alertsList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Notifications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Notification__c> notificationList = [SELECT Id FROM Notification__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( notificationList != null %26%26 notificationList.size() > 0) {\n\tdelete notificationList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Notification__c> notificationList = [SELECT Id FROM Notification__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( notificationList != null %26%26 notificationList.size() > 0) {\n\tdelete notificationList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Shipments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Shipment__c> shipmentsList = [SELECT Id From Shipment__c Where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( shipmentsList != null %26%26 shipmentsList.size() > 0) {\n\tdelete shipmentsList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User-Config-Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=Configuration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList !=null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\n\t\tUser u = \tuserList[0];\n\t\t\n\t\tList<User_Configuration_Value__c> confValues = [SELECT Id FROM User_Configuration_Value__c WHERE Configuration_setting__c =: configSetting.Id AND Configuration_value__c =: configValue.Id AND User__c =: u.Id];\n\n\t\tif (confValues != null %26%26 confValues.size() > 0){\n\t\t\tdelete confValues;\n\n\t\t}\n\t}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "Configuration_Setting__c configSetting = [SELECT Id FROM Configuration_Setting__c WHERE Name = 'Cookie Privacy' LIMIT 1];\n\nConfiguration_Value__c configValue = [SELECT Id FROM Configuration_Value__c WHERE Label__c = 'Cookie_Settings_Question' AND Configuration_Setting__c =: configSetting.Id LIMIT 1];\n\nList<Contact> contactList = [SELECT Id FROM Contact where Email = '{{email}}' and Account.Customer_Number__c = '{{Customer_Number}}'  Limit 1];\n\nif (contactList !=null %26%26 contactList.size() > 0){\n\t\n\tContact con = contactList[0];\n\n\tList<User> userList = [SELECT Id FROM User WHERE ContactId =: con.Id LIMIT 1];\n\n\tif (userList != null %26%26 userList.size() > 0){\n\t\n\t\tUser u = \tuserList[0];\n\t\t\n\t\tList<User_Configuration_Value__c> confValues = [SELECT Id FROM User_Configuration_Value__c WHERE Configuration_setting__c =: configSetting.Id AND Configuration_value__c =: configValue.Id AND User__c =: u.Id];\n\n\t\tif (confValues != null %26%26 confValues.size() > 0){\n\t\t\tdelete confValues;\n\n\t\t}\n\t}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Account-Config-Value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Account_Configuration_Value__c> accConValue = [SELECT Id FROM Account_Configuration_Value__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (accConValue != null %26%26 accConValue.size() > 0 ){\n\tdelete accConValue;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Account_Configuration_Value__c> accConValue = [SELECT Id FROM Account_Configuration_Value__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (accConValue != null %26%26 accConValue.size() > 0 ){\n\tdelete accConValue;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Product Authorisations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<PostNL_Contract__c> contractList = [SELECT Id FROM PostNL_Contract__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (contractList != null %26%26 contractList.size() > 0 ){\n\tdelete contractList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<PostNL_Contract__c> contractList = [SELECT Id FROM PostNL_Contract__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (contractList != null %26%26 contractList.size() > 0 ){\n\tdelete contractList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete addresses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Address__c> addresses = [SELECT Id FROM Address__c WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\nif (addresses != null %26%26 addresses.size() > 0 ){\n\tdelete addresses;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Party Codes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Party_code__c> partycodesList = [SELECT Id FROM Party_code__c  WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( partycodesList != null %26%26 partycodesList.size() > 0 ) {\n\tdelete partycodesList;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Party_code__c> partycodesList = [SELECT Id FROM Party_code__c  WHERE Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif ( partycodesList != null %26%26 partycodesList.size() > 0 ) {\n\tdelete partycodesList;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete User Authorisation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<User_Authorization__c> userAuths = [SELECT ID FROM User_Authorization__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userAuths != null %26%26 userAuths.size() > 0 ){\n\tdelete userAuths;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Disable Contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Contact> contactList = [SELECT Id FROM Contact where Account.Customer_Number__c = '{{Customer_Number}}' Limit 1];\n\nif (contactList.size() > 0){\nContact con = contactList[0];\n\nList<User> userList = [SELECT Id, IsActive, IsPortalEnabled FROM User where ContactId =: con.Id LIMIT 1];\n\nif (userList != null %26%26 userList.size() > 0){\n\tUser testUser = userList[0];\n\nif(testUser != null){\nif (testUser.IsActive || testUser.IsPortalEnabled ){\n    testUser.IsActive = false;\n    testUser.IsPortalEnabled = false;\n    testUser.FederationIdentifier = '';\n    testUser.UPN__c = '';\n    update testUser;\n    }\n}\n}\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete Favourite",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n"
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Product_Favorite__c> userFav = [select Id from Product_Favorite__c where Account__r.Customer_Number__c = '{{Customer_Number}}'];\n\nif (userfav != null %26%26 userFav.size() > 0 ){\n\tdelete userFav;\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Delete-account-contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function(){}, 5000);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "List<Account> accList = [SELECT Id from Account where Customer_Number__c = '{{Customer_Number}}' limit 1];\nif (accList.size() > 0){\ndelete accList[0];\n}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Apex Execute-Unassign accountId to the logged user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {
+							"content-length": true
+						}
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token_type}} {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Length",
+								"value": "0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance_url}}/services/data/v50.0/tooling/executeAnonymous/?anonymousBody=User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;",
+							"host": [
+								"{{instance_url}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"v50.0",
+								"tooling",
+								"executeAnonymous",
+								""
+							],
+							"query": [
+								{
+									"key": "anonymousBody",
+									"value": "User testUser = [SELECT Id FROM User where Id = :UserInfo.getUserId() LIMIT 1];\ntestUser.Account_Id__c = '{{Id}}';\nupdate testUser;"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Customer_Number",
+			"value": "1645536455275"
+		},
+		{
+			"key": "email",
+			"value": "1645536455275Postman@PostNLtest.com"
+		},
+		{
+			"key": "UPN",
+			"value": "AV-1645536455275@customer.dmz.ref"
+		},
+		{
+			"key": "AccountName",
+			"value": "PostmanImportShipment"
+		},
+		{
+			"key": "ContactFirstName",
+			"value": "Postman"
+		},
+		{
+			"key": "ContactLastName",
+			"value": "ImportShipment"
+		},
+		{
+			"key": "userFirstName",
+			"value": "ImportShipment"
+		},
+		{
+			"key": "userLastName",
+			"value": "TestUser"
+		},
+		{
+			"key": "userAlias",
+			"value": "BP_IST"
+		},
+		{
+			"key": "DomesticPartyCode1",
+			"value": "H29K"
+		},
+		{
+			"key": "DomesticPartyCode2",
+			"value": "S91H"
+		},
+		{
+			"key": "DomesticPartyCode3",
+			"value": "M51K"
+		},
+		{
+			"key": "GlobalPartyCode",
+			"value": "I371L9"
+		},
+		{
+			"key": "ReturnAddress_Id",
+			"value": ""
+		},
+		{
+			"key": "ReturnAddress_Name",
+			"value": ""
+		},
+		{
+			"key": "RecepientAddressId",
+			"value": ""
+		},
+		{
+			"key": "SenderAddressId",
+			"value": ""
+		},
+		{
+			"key": "OptionId_LetterBox",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel",
+			"value": ""
+		},
+		{
+			"key": "OptionId_cargo",
+			"value": ""
+		},
+		{
+			"key": "OptionId_registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Extra_Home",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Pharma",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Food",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Letterbox_Packet_PTP",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Letterbox_Wholesale",
+			"value": ""
+		},
+		{
+			"key": "OptionId_home_address",
+			"value": ""
+		},
+		{
+			"key": "OptionId_post_office",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Piece_good",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Halfed_sized_EUR_pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Flexible_trolley",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Block_Pallet",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Post_Paid",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Mail",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Parcel",
+			"value": ""
+		},
+		{
+			"key": "OptionId_BP2_RM_Standard_Registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Insured",
+			"value": ""
+		},
+		{
+			"key": "OptionId_RM_Identification_check",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel_RM_Standard_Registered",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Parcel_Insured",
+			"value": ""
+		},
+		{
+			"key": "NL_Recepient_Id",
+			"value": ""
+		},
+		{
+			"key": "DE_Recepient_Id",
+			"value": ""
+		},
+		{
+			"key": "NL_Sender_Id",
+			"value": ""
+		},
+		{
+			"key": "NL_return_Id",
+			"value": ""
+		},
+		{
+			"key": "Product_Id_3085",
+			"value": ""
+		},
+		{
+			"key": "Product_Id_4950",
+			"value": ""
+		},
+		{
+			"key": "PartyCode_Id_WXXY",
+			"value": ""
+		},
+		{
+			"key": "FirstShipment",
+			"value": ""
+		},
+		{
+			"key": "SecondShipment",
+			"value": ""
+		},
+		{
+			"key": "shipmentCount",
+			"value": ""
+		},
+		{
+			"key": "label_PDF_Count",
+			"value": ""
+		},
+		{
+			"key": "Count_PreAnnouncedShipments",
+			"value": ""
+		},
+		{
+			"key": "Id",
+			"value": ""
+		},
+		{
+			"key": "Address_Id",
+			"value": ""
+		},
+		{
+			"key": "totalSize",
+			"value": ""
+		},
+		{
+			"key": "Sender_Address_Id",
+			"value": ""
+		},
+		{
+			"key": "Sender_Address_Name",
+			"value": ""
+		},
+		{
+			"key": "ImportFileNumber",
+			"value": "IF-001265750"
+		},
+		{
+			"key": "File_Id",
+			"value": ""
+		},
+		{
+			"key": "Import_Id",
+			"value": ""
+		},
+		{
+			"key": "One_man",
+			"value": ""
+		},
+		{
+			"key": "Two_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_One_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_Two_man",
+			"value": ""
+		},
+		{
+			"key": "optionId_Doorstep",
+			"value": ""
+		},
+		{
+			"key": "optionId_Top",
+			"value": ""
+		},
+		{
+			"key": "optionId_DoorstepTwoMan",
+			"value": ""
+		},
+		{
+			"key": "optionId_TopTwoMan",
+			"value": ""
+		},
+		{
+			"key": "optionId_PalletPharma",
+			"value": ""
+		},
+		{
+			"key": "optionId_parcelPharma",
+			"value": ""
+		},
+		{
+			"key": "optionId_Food_Standard",
+			"value": ""
+		},
+		{
+			"key": "optionId_Food_Cold",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Collection_Basic",
+			"value": ""
+		},
+		{
+			"key": "OptionId_Collection_plus",
+			"value": ""
+		},
+		{
+			"key": "NumberOfTries",
+			"value": "1"
+		}
+	]
+}
